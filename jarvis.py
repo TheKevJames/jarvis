@@ -98,15 +98,14 @@ class Plugin(object):
     def register_cron(self):
         if 'crontable' in dir(self.module):
             for interval, function in self.module.crontable:
-                self.jobs.append(Job(interval,
-                                     eval('self.module.%s' % function)))
+                self.jobs.append(Job(interval, getattr(self.module, function)))
             self.module.crontable = []
         else:
             self.module.crontable = []
 
     def input(self, function_name, data):
         if function_name in dir(self.module):
-            eval('self.module.%s' % function_name)(data)
+            getattr(self.module, function_name)(data)
 
         if 'catch_all' in dir(self.module):
             self.module.catch_all(data)
