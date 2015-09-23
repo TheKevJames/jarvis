@@ -6,9 +6,6 @@ import sys
 import time
 
 
-DAEMON = False
-
-
 class Jarvis(object):
     def __init__(self, token):
         self.last_ping = 0
@@ -138,13 +135,6 @@ if __name__ == '__main__':
     job_hash = {}
 
     try:
-        if DAEMON:
-            import daemon
-
-            with daemon.DaemonContext():
-                bot.run()
-
         bot.run()
     except KeyboardInterrupt:
         sys.exit(0)
-
