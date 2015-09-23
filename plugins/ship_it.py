@@ -25,6 +25,11 @@ squirrels = [
 
 
 def process_message(data):
-    if 'text' in data and 'ship it' in data['text'].lower():
-        outputs.append([data['channel'], 'Will do, sir!'])
-        outputs.append([data['channel'], random.choice(squirrels)])
+    if 'text' in data:
+        text = data['text'].lower()
+        if not text.startswith('jarvis'):
+            return
+
+        if 'ship it' in text:
+            outputs.append([data['channel'], 'Will do, sir!'])
+            outputs.append([data['channel'], random.choice(squirrels)])

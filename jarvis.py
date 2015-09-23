@@ -21,7 +21,6 @@ class Jarvis(object):
             plugin.cron()
 
     def input(self, data):
-        print data
         if 'type' in data:
             function_name = 'process_' + data['type']
             for plugin in self.plugins:
@@ -137,4 +136,10 @@ if __name__ == '__main__':
     try:
         bot.run()
     except KeyboardInterrupt:
+        ch = bot.slack_client.server.channels.find('D0ATCUTN1')
+        if ch:
+            msg = 'Sir, I think I need to sleep now...'.encode('ascii',
+                                                               'ignore')
+            ch.send_message('{}'.format(msg))
+
         sys.exit(0)
