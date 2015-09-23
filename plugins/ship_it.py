@@ -20,12 +20,11 @@ squirrels = [
     'https://dl.dropboxusercontent.com/u/602885/github/sniper-squirrel.jpg',
     ('http://1.bp.blogspot.com/_v0neUj-VDa4/TFBEbqFQcII/AAAAAAAAFBU/'
      'E8kPNmF1h1E/s640/squirrelbacca-thumb.jpg'),
-    'https://dl.dropboxusercontent.com/u/602885/github/soldier-squirrel.jpg',
     'https://dl.dropboxusercontent.com/u/602885/github/squirrelmobster.jpeg',
 ]
 
 
 def process_message(data):
-    if 'ship it' in data['text'].lower():
+    if 'text' in data and 'ship it' in data['text'].lower():
         outputs.append([data['channel'], 'Will do, sir!'])
         outputs.append([data['channel'], random.choice(squirrels)])

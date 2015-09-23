@@ -3,7 +3,7 @@ outputs = []
 
 
 def process_message(data):
-    if 'you there?' in data['text'].lower():
+    if 'text' in data and 'you there?' in data['text'].lower():
         outputs.append([data['channel'], 'Oh hello, sir!'])
 
 
