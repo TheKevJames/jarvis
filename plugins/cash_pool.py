@@ -65,11 +65,13 @@ def process_message(data):
             outputs.append([data['channel'], "I've analyzed your cash pool."])
             for person, value in sorted(owes.iteritems()):
                 outputs.append([data['channel'],
-                                '%s owes $%s' % (person.title(), value)])
+                                '%s owes $%s' % (person.title(),
+                                                 round(value, 2))])
 
             for person, value in sorted(owed.iteritems()):
                 outputs.append([data['channel'],
-                                '%s is owed $%s' % (person.title(), value)])
+                                '%s is owed $%s' % (person.title(),
+                                                    round(value, 2))])
 
             if not owes and not owed:
                 outputs.append([data['channel'], 'All appears to be settled.'])
