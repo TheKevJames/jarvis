@@ -60,6 +60,8 @@ def process_message(data):
             pool[sendee] += value
 
             pickle.dump(pool, open(PICKLE_FILE, 'wb'))
+
+            outputs.append([data['channel'], 'Very good, sir.'])
             return
 
         did_pay = PAID.match(text)
@@ -75,5 +77,6 @@ def process_message(data):
                 pool[payee] += value / (num_payees + 1)
 
             pickle.dump(pool, open(PICKLE_FILE, 'wb'))
-            return
 
+            outputs.append([data['channel'], 'Very good, sir.'])
+            return
