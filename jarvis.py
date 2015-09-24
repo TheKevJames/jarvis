@@ -103,9 +103,6 @@ class Plugin(object):
         if function_name in dir(self.module):
             getattr(self.module, function_name)(data)
 
-        if 'catch_all' in dir(self.module):
-            self.module.catch_all(data)
-
     def cron(self):
         for job in self.jobs:
             job.check()
