@@ -35,6 +35,8 @@ def process_message(data):
             outputs.append([data['channel'], 'Very well, sir.'])
             outputs.append([data['channel'], __doc__.replace('\n', ' ')])
 
+            return
+
 
         if 'show the cash pool' in text:
             owes, owed = dict(), dict()
@@ -67,7 +69,11 @@ def process_message(data):
             value = float(value)
 
             pool[sender] -= value
+            if -0.01 < pool[sender] < 0.01:
+                pool[sender] = 0
             pool[sendee] += value
+            if -0.01 < pool[sendee] < 0.01:
+                pool[sendee] = 0
 
             pickle.dump(pool, open(PICKLE_FILE, 'wb'))
 
@@ -83,8 +89,12 @@ def process_message(data):
             num_payees = len([x for x in payees if x != payer])
 
             pool[payer] -= value * num_payees / (num_payees + 1)
+            if -0.01 < pool[payer] < 0.01:
+                pool[payer] = 0
             for payee in payees:
                 pool[payee] += value / (num_payees + 1)
+                if -0.01 < pool[payee] < 0.01:
+                    pool[payee] = 0
 
             pickle.dump(pool, open(PICKLE_FILE, 'wb'))
 
