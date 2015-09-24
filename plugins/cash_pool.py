@@ -34,7 +34,7 @@ def process_message(data):
 
         if 'explain the cash pool' in text:
             outputs.append([data['channel'], 'Very well, sir.'])
-            outputs.append([data['channel'], __doc__])
+            outputs.append([data['channel'], __doc__.replace('\n', ' ')])
 
 
         if 'show the cash pool' in text:
