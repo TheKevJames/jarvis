@@ -43,7 +43,7 @@ def process_message(data):
                 outputs.append([data['channel'],
                                 '%s is owed $%s' % (person.title(), value)])
 
-            if not owes or owed:
+            if not owes and not owed:
                 outputs.append([data['channel'], 'All appears to be settled.'])
 
             return
