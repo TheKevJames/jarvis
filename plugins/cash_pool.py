@@ -1,9 +1,9 @@
 """
 You can ask me to "show the cash pool" if you would like to see your debts.
 Alternatively, you may inform me that "Tom sent $42 to Dick" or that "Tom paid
-$333 for Dick and Harry".
+$333 for Dick and Harry". Of course, I will always assume that Tom also paid
+for himself.
 """
-
 from collections import defaultdict
 import cPickle as pickle
 import re
@@ -13,9 +13,8 @@ crontable = []
 outputs = []
 
 
-SENT = re.compile(r'jarvis.* (\w+) sent \$([\d\.]+) to (\w+)', re.IGNORECASE)
-PAID = re.compile(r'jarvis.* (\w+) paid \$([\d\.]+) for ([ \w]+)',
-                  re.IGNORECASE)
+SENT = re.compile(r'jarvis.* (\w+) sent \$([\d\.]+) to (\w+)')
+PAID = re.compile(r'jarvis.* (\w+) paid \$([\d\.]+) for ([ \w]+)')
 
 
 PICKLE_FILE = 'cash_pool.pickle'
