@@ -1,3 +1,9 @@
+"""
+You can ask me to "show the cash pool" if you would like to see your debts.
+Alternatively, you may inform me that "Tom sent $42 to Dick" or that "Tom paid
+$333 for Dick and Harry".
+"""
+
 from collections import defaultdict
 import cPickle as pickle
 import re
@@ -24,6 +30,11 @@ def process_message(data):
         text = data['text'].lower()
         if not text.startswith('jarvis'):
             return
+
+
+        if 'explain the cash pool' in text:
+            outputs.append([data['channel'], 'Very well, sir.'])
+            outputs.append([data['channel'], __doc__])
 
 
         if 'show the cash pool' in text:
