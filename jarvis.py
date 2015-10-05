@@ -1,9 +1,16 @@
 #!/usr/bin/env python
 from slackclient import SlackClient
 import glob
+import logging
 import os
 import sys
 import time
+
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s - %(name)s - %(levelname)s - '
+                           '%(message)s')
 
 
 class Jarvis(object):
@@ -15,6 +22,7 @@ class Jarvis(object):
 
         self.plugins = []
         self.load_plugins()
+        logger.debug('Done initializing.')
 
     def crons(self):
         for plugin in self.plugins:
@@ -40,7 +48,9 @@ class Jarvis(object):
     def keepalive(self):
         now = int(time.time())
         if now > self.last_ping + 3:
+            logger.debug('ping!')
             self.slack_client.server.ping()
+            logger.debug('pong!')
             self.last_ping = now
 
     def output(self):
@@ -124,19 +134,24 @@ class Plugin(object):
 if __name__ == '__main__':
     directory = os.path.dirname(os.path.realpath(__name__))
 
-    bot = Jarvis(os.environ['SLACK_TOKEN'])
+    jarvis = Jarvis(os.environ['SLACK_TOKEN'])
 
     site_plugins = []
     files_currently_downloading = []
     job_hash = {}
 
     try:
-        bot.run()
+        jarvis.run()
     except KeyboardInterrupt:
-        ch = bot.slack_client.server.channels.find('D0ATCUTN1')
+        logger.info('Caught KeyboardInterrupt, shutting down.')
+        ch = jarvis.slack_client.server.channels.find('D0ATCUTN1')
         if ch:
             msg = 'Sir, I think I need to sleep now...'.encode('ascii',
                                                                'ignore')
             ch.send_message('{}'.format(msg))
 
+        sys.exit(0)
+    except Exception as e:
+        logger.error('Unhandled exception.')
+        logger.exception(e)
         sys.exit(0)
