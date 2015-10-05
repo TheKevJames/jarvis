@@ -9,6 +9,7 @@ import time
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG,
+                    filename='jarvis.log',
                     format='%(asctime)s - %(name)s - %(levelname)s - '
                            '%(message)s')
 

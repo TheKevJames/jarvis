@@ -3,4 +3,4 @@ all:
 
 
 run:
-	SLACK_TOKEN=`cat ~/Dropbox/secret/slack/softies-jarvis` ./jarvis.py > jarvis.log
+	SLACK_TOKEN=`cat ~/Dropbox/secret/slack/softies-jarvis` ./jarvis.py
