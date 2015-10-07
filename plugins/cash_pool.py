@@ -32,94 +32,91 @@ except IOError:
 
 
 def process_message(data):
-    if 'text' in data:
-        text = data['text'].lower()
-        if not text.startswith('jarvis'):
-            return
+    if 'explain the cash pool' in data['text']:
+        outputs.append([data['channel'], 'Very well, sir.'])
+        outputs.append([data['channel'], __doc__.replace('\n', ' ')])
 
-        if 'explain the cash pool' in text:
-            outputs.append([data['channel'], 'Very well, sir.'])
-            outputs.append([data['channel'], __doc__.replace('\n', ' ')])
+        return
 
-            return
-
-        if 'show the cash pool' in text:
-            if 'history' in text:
-                if history:
-                    outputs.append([
-                        data['channel'],
-                        'Very good, sir, displaying your history now:'])
-
-                for line in history:
-                    outputs.append([data['channel'], line])
-
-                return
-
-            owes, owed = dict(), dict()
-            for person, value in pool.iteritems():
-                if value > 0:
-                    owes[person] = value
-                elif value < 0:
-                    owed[person] = -value
-
-            outputs.append([data['channel'], "I've analyzed your cash pool."])
-            for person, value in sorted(owes.iteritems()):
+    if 'show the cash pool' in data['text']:
+        if 'history' in data['text']:
+            if history:
+                outputs.append([
+                    data['channel'],
+                    'Very good, sir, displaying your history now:'])
+            else:
                 outputs.append([data['channel'],
-                                '%s owes $%s' % (person.title(),
-                                                 round(value, 2))])
+                                'I have no record of a cash pool, sir.'])
 
-            for person, value in sorted(owed.iteritems()):
-                outputs.append([data['channel'],
-                                '%s is owed $%s' % (person.title(),
-                                                    round(value, 2))])
-
-            if not owes and not owed:
-                outputs.append([data['channel'], 'All appears to be settled.'])
+            for line in history:
+                outputs.append([data['channel'], line.replace('jarvis, ', '')])
 
             return
 
-        did_send = SENT.match(text)
-        if did_send:
-            sender, value, sendee = did_send.groups()
-            sender = sender.lower()
-            sendee = sendee.lower()
-            value = float(value)
+        owes, owed = dict(), dict()
+        for person, value in pool.iteritems():
+            if value > 0:
+                owes[person] = value
+            elif value < 0:
+                owed[person] = -value
 
-            pool[sender] -= value
-            if -0.01 < pool[sender] < 0.01:
-                pool[sender] = 0
-            pool[sendee] += value
-            if -0.01 < pool[sendee] < 0.01:
-                pool[sendee] = 0
+        outputs.append([data['channel'], "I've analyzed your cash pool."])
+        for person, value in sorted(owes.iteritems()):
+            outputs.append([data['channel'],
+                            '%s owes $%s' % (person.title(), round(value, 2))])
 
-            history.append(text)
+        for person, value in sorted(owed.iteritems()):
+            outputs.append([data['channel'],
+                            '%s is owed $%s' % (person.title(),
+                                                round(value, 2))])
 
-            pickle.dump(history, open(PICKLE_HISTORY_FILE, 'wb'))
-            pickle.dump(pool, open(PICKLE_FILE, 'wb'))
+        if not owes and not owed:
+            outputs.append([data['channel'], 'All appears to be settled.'])
 
-            outputs.append([data['channel'], 'Very good, sir.'])
-            return
+        return
 
-        did_pay = PAID.match(text)
-        if did_pay:
-            payer, value, payees = did_pay.groups()
-            payer = payer.lower()
-            payees = payees.lower().split(' and ')
-            value = float(value)
-            num_payees = len([x for x in payees if x != payer])
+    did_send = SENT.match(data['text'])
+    if did_send:
+        sender, value, sendee = did_send.groups()
+        sender = sender.lower()
+        sendee = sendee.lower()
+        value = float(value)
 
-            pool[payer] -= value * num_payees / (num_payees + 1)
-            if -0.01 < pool[payer] < 0.01:
-                pool[payer] = 0
-            for payee in payees:
-                pool[payee] += value / (num_payees + 1)
-                if -0.01 < pool[payee] < 0.01:
-                    pool[payee] = 0
+        pool[sender] -= value
+        if -0.01 < pool[sender] < 0.01:
+            pool[sender] = 0
+        pool[sendee] += value
+        if -0.01 < pool[sendee] < 0.01:
+            pool[sendee] = 0
 
-            history.append(text)
+        history.append(data['text'])
 
-            pickle.dump(history, open(PICKLE_HISTORY_FILE, 'wb'))
-            pickle.dump(pool, open(PICKLE_FILE, 'wb'))
+        pickle.dump(history, open(PICKLE_HISTORY_FILE, 'wb'))
+        pickle.dump(pool, open(PICKLE_FILE, 'wb'))
 
-            outputs.append([data['channel'], 'Very good, sir.'])
-            return
+        outputs.append([data['channel'], 'Very good, sir.'])
+        return
+
+    did_pay = PAID.match(data['text'])
+    if did_pay:
+        payer, value, payees = did_pay.groups()
+        payer = payer.lower()
+        payees = payees.lower().split(' and ')
+        value = float(value)
+        num_payees = len([x for x in payees if x != payer])
+
+        pool[payer] -= value * num_payees / (num_payees + 1)
+        if -0.01 < pool[payer] < 0.01:
+            pool[payer] = 0
+        for payee in payees:
+            pool[payee] += value / (num_payees + 1)
+            if -0.01 < pool[payee] < 0.01:
+                pool[payee] = 0
+
+        history.append(data['text'])
+
+        pickle.dump(history, open(PICKLE_HISTORY_FILE, 'wb'))
+        pickle.dump(pool, open(PICKLE_FILE, 'wb'))
+
+        outputs.append([data['channel'], 'Very good, sir.'])
+        return

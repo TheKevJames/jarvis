@@ -4,6 +4,7 @@ import random
 crontable = []
 outputs = []
 
+
 squirrels = [
     'https://img.skitch.com/20111026-r2wsngtu4jftwxmsytdke6arwd.png',
     ('http://images.cheezburger.com/completestore/2011/11/2/'
@@ -25,11 +26,6 @@ squirrels = [
 
 
 def process_message(data):
-    if 'text' in data:
-        text = data['text'].lower()
-        if not text.startswith('jarvis'):
-            return
-
-        if 'ship it' in text:
-            outputs.append([data['channel'], 'Will do, sir!'])
-            outputs.append([data['channel'], random.choice(squirrels)])
+    if 'ship it' in data['text']:
+        outputs.append([data['channel'], 'Will do, sir.'])
+        outputs.append([data['channel'], random.choice(squirrels)])
