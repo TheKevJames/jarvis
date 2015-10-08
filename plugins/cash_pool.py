@@ -53,24 +53,14 @@ def process_message(data):
 
             return
 
-        owes, owed = dict(), dict()
-        for person, value in pool.iteritems():
-            if value > 0:
-                owes[person] = value
-            elif value < 0:
-                owed[person] = -value
-
         outputs.append([data['channel'], "I've analyzed your cash pool."])
-        for person, value in sorted(owes.iteritems()):
+        for person, value in sorted(pool.iteritems()):
             outputs.append([data['channel'],
-                            '%s owes $%s' % (person.title(), round(value, 2))])
+                            '%s %s $%s' % ('owes' if value > 0 else 'is owed',
+                                              person.title(), round(abs(value), 2))])
 
-        for person, value in sorted(owed.iteritems()):
-            outputs.append([data['channel'],
-                            '%s is owed $%s' % (person.title(),
-                                                round(value, 2))])
 
-        if not owes and not owed:
+        if not pool:
             outputs.append([data['channel'], 'All appears to be settled.'])
 
         return
