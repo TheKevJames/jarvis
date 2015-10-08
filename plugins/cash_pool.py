@@ -1,4 +1,4 @@
-"""
+"owes and not owed:owes and not owed:owes and not owed:""
 You can ask me to "show the cash pool" if you would like to see your debts. You
 can also ask me to "show the cash pool history", if you'd prefer.
 Alternatively, you may inform me that "Tom sent $42 to Dick" or that "Tom paid
@@ -56,8 +56,9 @@ def process_message(data):
         outputs.append([data['channel'], "I've analyzed your cash pool."])
         for person, value in sorted(pool.iteritems()):
             outputs.append([data['channel'],
-                            '%s %s $%s' % ('owes' if value > 0 else 'is owed',
-                                              person.title(), round(abs(value), 2))])
+                            '%s %s $%s' % (person.title(),
+                                           'owes' if value > 0 else 'is owed',
+                                           round(abs(value), 2))])
 
 
         if not pool:
