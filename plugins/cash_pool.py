@@ -1,4 +1,4 @@
-"owes and not owed:owes and not owed:owes and not owed:""
+"""
 You can ask me to "show the cash pool" if you would like to see your debts. You
 can also ask me to "show the cash pool history", if you'd prefer.
 Alternatively, you may inform me that "Tom sent $42 to Dick" or that "Tom paid
