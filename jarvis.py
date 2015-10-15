@@ -49,9 +49,7 @@ class Jarvis(object):
     def keepalive(self):
         now = int(time.time())
         if now > self.last_ping + 3:
-            logger.debug('ping!')
             self.slack_client.server.ping()
-            logger.debug('pong!')
             self.last_ping = now
 
     def output(self):
@@ -112,13 +110,14 @@ def run():
         sys.exit(0)
     except Exception as e:
         logger.error('Error running JARVIS.')
+        logger.exception(e)
+
         ch = jarvis.slack_client.server.channels.find('D0ATCUTN1')
         if ch:
             msg = 'I think I may be malfunctioning, sir.'.encode('ascii',
                                                                  'ignore')
             ch.send_message('{}'.format(msg))
 
-        logger.exception(e)
         sys.exit(-1)
 
 

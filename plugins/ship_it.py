@@ -1,7 +1,6 @@
 import random
 
 
-crontable = []
 outputs = []
 
 
@@ -22,6 +21,7 @@ squirrels = [
     ('http://1.bp.blogspot.com/_v0neUj-VDa4/TFBEbqFQcII/AAAAAAAAFBU/'
      'E8kPNmF1h1E/s640/squirrelbacca-thumb.jpg'),
     'https://dl.dropboxusercontent.com/u/602885/github/squirrelmobster.jpeg',
+    'http://cdn.meme.am/instances/250x250/63111222.jpg',
 ]
 
 
