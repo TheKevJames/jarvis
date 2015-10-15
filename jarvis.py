@@ -37,6 +37,7 @@ class Jarvis(object):
         logger.debug('Done initializing.')
 
     def input(self, data):
+        # TODO: fix naive 'text fragment' in data['text']
         if 'type' in data and 'text' in data:
             data['text'] = data['text'].lower()
             if not data['text'].startswith('jarvis'):

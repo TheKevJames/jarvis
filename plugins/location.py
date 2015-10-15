@@ -5,13 +5,13 @@ import re
 import requests
 
 
+outputs = []
+
+
 MOVED = re.compile(r"jarvis.* i'm in ([ \w]+)")
 WEATHER_URL = ('http://api.worldweatheronline.com/free/v2/weather.ashx?q=%s'
                '&format=json&num_of_days=1&includelocation=yes'
                '&showlocaltime=yes&key=%s')
-
-
-outputs = []
 
 
 logger = logging.getLogger(__name__)
@@ -34,7 +34,7 @@ def process_message(data):
 
         outputs.append(
             [data['channel'],
-             "Very good, sir. I've updated your location to %s" % place])
+             "Very good, sir. I've updated your location to %s." % place])
         return
 
     if "how's the weather?" in data['text']:
@@ -78,7 +78,7 @@ def process_message(data):
             info.append('The weather in %s is %s degrees Celsius and %s.' %
                         (city, current['temp_C'], description))
 
-            # past/future tense
+            # TODO: past/future tense
             info.append("Today's sunrise and sunset occur at %s and %s." %
                         (sunrise, sunset))
 

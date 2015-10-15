@@ -70,6 +70,7 @@ def process_message(data):
         sender, value, sendee = did_send.groups()
         value = float(value)
 
+        # TODO: do floating points properly
         pool[sender] -= value
         if -0.01 < pool[sender] < 0.01:
             pool[sender] = 0
