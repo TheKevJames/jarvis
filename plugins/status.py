@@ -1,8 +1,7 @@
 """
-I am version 0.3 of the J.A.R.V.I.S. natural language interface for Slack,
+I am version 0.4 of the J.A.R.V.I.S. natural language interface for Slack,
 configured to perform a multitude of functions.
 """
-crontable = []
 outputs = []
 
 

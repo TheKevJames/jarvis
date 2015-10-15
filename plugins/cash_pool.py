@@ -10,7 +10,6 @@ import cPickle as pickle
 import re
 
 
-crontable = []
 outputs = []
 
 
@@ -78,8 +77,6 @@ def process_message(data):
     did_send = SENT.match(data['text'])
     if did_send:
         sender, value, sendee = did_send.groups()
-        sender = sender.lower()
-        sendee = sendee.lower()
         value = float(value)
 
         pool[sender] -= value
@@ -100,8 +97,7 @@ def process_message(data):
     did_pay = PAID.match(data['text'])
     if did_pay:
         payer, value, payees = did_pay.groups()
-        payer = payer.lower()
-        payees = payees.lower().split(' and ')
+        payees = payees.split(' and ')
         value = float(value)
         num_payees = len([x for x in payees if x != payer])
 
