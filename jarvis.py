@@ -81,10 +81,10 @@ class Plugin(object):
             getattr(self.module, function_name)(data)
 
     def output(self):
-        output = self.module.outputs[:]
+        outputs = self.module.outputs[:]
         self.module.outputs = []
 
-        return output
+        return outputs
 
 
 def run():
