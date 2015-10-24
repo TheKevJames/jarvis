@@ -64,11 +64,11 @@ def process_message(data):
 
     if 'show the cash pool' in data['text']:
         if 'history' in data['text']:
-            if 'recent' in data['text']:
-                show_history(data['channel'], recent=-10)
+            if 'entire' in data['text']:
+                show_history(data['channel'])
                 return
 
-            show_history(data['channel'])
+            show_history(data['channel'], recent=-10)
             return
 
         show_pool(data['channel'])
