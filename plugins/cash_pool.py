@@ -29,14 +29,14 @@ except IOError:
     history = list()
 
 
-def show_history(channel):
+def show_history(channel, recent=None):
     if history:
         outputs.append([channel,
                         'Very good, sir, displaying your history now:'])
     else:
         outputs.append([channel, 'I have no record of a cash pool, sir.'])
 
-    for line in history:
+    for line in history[recent:]:
         # TODO: better history sanitization
         outputs.append([channel, line.replace('jarvis, ', '')])
 
@@ -64,6 +64,10 @@ def process_message(data):
 
     if 'show the cash pool' in data['text']:
         if 'history' in data['text']:
+            if 'recent' in data['text']:
+                show_history(data['channel'], recent=-10)
+                return
+
             show_history(data['channel'])
             return
 
