@@ -1,11 +1,13 @@
+import logging
 import random
 
+from ..plugin import Plugin
 
-outputs = []
+
+logger = logging.getLogger(__name__)
 
 
 squirrels = [
-    'https://img.skitch.com/20111026-r2wsngtu4jftwxmsytdke6arwd.png',
     ('http://images.cheezburger.com/completestore/2011/11/2/'
      'aa83c0c4-2123-4bd3-8097-966c9461b30c.jpg'),
     ('http://images.cheezburger.com/completestore/2011/11/2/'
@@ -25,7 +27,9 @@ squirrels = [
 ]
 
 
-def process_message(data):
-    if 'ship it' in data['text']:
-        outputs.append([data['channel'], 'Will do, sir.'])
-        outputs.append([data['channel'], random.choice(squirrels)])
+class ShipIt(Plugin):
+    def respond(self, ch=None, user=None, msg=None):
+        if 'ship it' in msg:
+            logger.debug('Shipping it!')
+            self.send(ch, 'Will do, sir.')
+            self.send(ch, random.choice(squirrels))
