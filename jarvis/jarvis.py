@@ -1,7 +1,12 @@
-from slackclient import SlackClient
+import contextlib
+import json
 import logging
 import time
 
+import slackclient
+
+from .db import conn
+from .db import initialize_database
 from .error import SlackError
 from .plugins import get_plugins
 
@@ -13,10 +18,41 @@ class Jarvis(object):
     def __init__(self, token):
         self.last_ping = 0
 
-        self.slack = SlackClient(token)
+        self.slack = slackclient.SlackClient(token)
         self.slack.rtm_connect()
 
         self.plugins = get_plugins(self.slack)
+
+    def init(self):
+        initialize_database()
+
+        users = json.loads(self.slack.api_call('users.list'))
+        for user in users['members']:
+            if user['deleted']:
+                continue
+
+            if user['is_bot'] or user['id'] == 'USLACKBOT':
+                continue
+
+            uuid = user['id']
+            first_name = user['profile']['first_name'].lower()
+            last_name = user['profile']['last_name'].lower()
+            email = user['profile']['email']
+            username = user['name']
+            is_admin = int(user['is_admin'])
+            with contextlib.closing(conn.cursor()) as cur:
+                cur.execute(""" INSERT INTO user (uuid, first_name, last_name,
+                                                  email, username, is_admin)
+                                VALUES (?, ?, ?, ?, ?, ?)
+                            """, [uuid, first_name, last_name, email, username,
+                                  is_admin])
+                conn.commit()
+
+        import os.path
+        if os.path.exists(os.path.join(
+                os.path.dirname(os.path.abspath(__file__)), 'seed_data.py')):
+            from .seed_data import init
+            init()
 
         logger.debug('Done initializing.')
 

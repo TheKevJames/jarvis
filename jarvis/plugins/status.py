@@ -1,5 +1,5 @@
 """
-I am version 1.1.1 of the J.A.R.V.I.S. natural language interface for Slack,
+I am version {} of the J.A.R.V.I.S. natural language interface for Slack,
 configured to perform a multitude of functions.
 """
 import contextlib
@@ -10,6 +10,7 @@ import sys
 from ..db import conn
 from ..error import SlackError
 from ..plugin import Plugin
+from .. import __version__
 
 
 logger = logging.getLogger(__name__)
@@ -24,6 +25,9 @@ class Status(Plugin):
                                         FROM user
                                         WHERE is_admin = 1
                                     """).fetchall():
+                if not user[0]:
+                    continue
+
                 ch = self.slack.server.channels.find(user[0])
                 if not ch:
                     logger.error('Could not look up admin channel %s', user[0])
@@ -33,7 +37,7 @@ class Status(Plugin):
 
     @Plugin.on_message(r'.*describe yourself.*')
     def describe(self, ch, _user, _groups):
-        self.send(ch, __doc__.replace('\n', ' '))
+        self.send(ch, __doc__.format(__version__).replace('\n', ' '))
 
     @Plugin.require_auth
     @Plugin.on_message(r'.*(power|shut) (off|down).*')
