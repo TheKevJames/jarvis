@@ -1,5 +1,5 @@
 """
-I am version 1.1.0 of the J.A.R.V.I.S. natural language interface for Slack,
+I am version 1.1.1 of the J.A.R.V.I.S. natural language interface for Slack,
 configured to perform a multitude of functions.
 """
 import contextlib
@@ -35,18 +35,12 @@ class Status(Plugin):
     def describe(self, ch, _user, _groups):
         self.send(ch, __doc__.replace('\n', ' '))
 
-    @Plugin.on_message(r'.*(power off|shut down).*')
-    def die(self, ch, user, _groups):
-        with contextlib.closing(conn.cursor()) as cur:
-            admin = cur.execute(""" SELECT is_admin
-                                    FROM user
-                                    WHERE uuid = ?
-                                """, [user]).fetchone()[0]
-
-        if admin:
-            self.send(ch, 'As you wish.')
-            logger.debug('Shutting down by request.')
-            sys.exit(0)
+    @Plugin.require_auth
+    @Plugin.on_message(r'.*(power|shut) (off|down).*')
+    def die(self, ch, _user, _groups):
+        self.send(ch, 'As you wish.')
+        logger.debug('Shutting down by request.')
+        sys.exit(0)
 
     @Plugin.on_message(r".*i'm (back|home).*")
     def im_back(self, ch, _user, _groups):

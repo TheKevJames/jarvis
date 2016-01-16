@@ -28,6 +28,7 @@ CREATE TABLE cash_pool_history (
     FOREIGN KEY (source) REFERENCES user(uuid)
 );
 """
+import contextlib
 import sqlite3
 
 
@@ -35,8 +36,15 @@ conn = sqlite3.connect('jarvis.db')
 
 
 def initialize_database():
-    cur = conn.cursor()
-    try:
+    with contextlib.closing(conn.cursor()) as cur:
         cur.executescript(__doc__)
-    finally:
-        cur.close()
+
+
+def is_admin(uuid):
+    with contextlib.closing(conn.cursor()) as cur:
+        admin = cur.execute(""" SELECT is_admin
+                                FROM user
+                                WHERE uuid = ?
+                            """, [uuid]).fetchone()
+
+    return admin[0]

@@ -1,6 +1,8 @@
 import collections
 import re
 
+from .db import is_admin
+
 
 class PluginMetaclass(type):
     @classmethod
@@ -27,7 +29,10 @@ class Plugin(object):
             return func
         return on_message_decorator
 
-    # TODO: @if_admin
+    @staticmethod
+    def require_auth(func):
+        func.auth = True
+        return func
 
     # TODO: buffer, send in one message
     @staticmethod
@@ -37,6 +42,11 @@ class Plugin(object):
     def respond(self, ch, user, msg):
         for fn in self.response_fns:
             regex_match = fn.regex.match(msg)
-            if regex_match:
-                fn(self, ch, user, regex_match.groups())
-                return
+            if not regex_match:
+                continue
+
+            if hasattr(fn, 'auth') and not is_admin(user):
+                continue
+
+            fn(self, ch, user, regex_match.groups())
+            return
