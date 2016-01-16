@@ -57,9 +57,9 @@ class Jarvis(object):
         logger.debug('Done initializing.')
 
     def input(self, data):
-        msg_type = data.get('type')  # Jarvis should only respond to 'message'
-        msg = data.get('text', '').lower()
-        if msg_type and msg:
+        msg_type = data.get('type')
+        if msg_type == 'message':
+            msg = data.get('text', '').lower()
             # TODO: consider changing how Jarvis pays attention
             if not msg.startswith('jarvis'):
                 return
@@ -73,6 +73,25 @@ class Jarvis(object):
             user = data.get('user')
             for plugin in self.plugins:
                 plugin.respond(ch=ch, user=user, msg=msg)
+            return
+
+        if msg_type == 'user_change':
+            user = data.get('user')
+            uuid = user['id']
+            first_name = user['profile']['first_name'].lower()
+            last_name = user['profile']['last_name'].lower()
+            email = user['profile']['email']
+            username = user['name']
+            is_admin = int(user['is_admin'])
+
+            with contextlib.closing(conn.cursor()) as cur:
+                cur.execute(""" INSERT OR REPLACE INTO user
+                                (uuid, first_name, last_name, email, username,
+                                 is_admin)
+                                VALUES (?, ?, ?, ?, ?, ?)
+                            """, [uuid, first_name, last_name, email, username,
+                                  is_admin])
+                conn.commit()
 
     def keepalive(self):
         now = int(time.time())
