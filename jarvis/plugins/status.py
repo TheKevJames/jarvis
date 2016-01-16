@@ -1,9 +1,11 @@
 """
-I am version 1.0.0 of the J.A.R.V.I.S. natural language interface for Slack,
+I am version 1.1.0 of the J.A.R.V.I.S. natural language interface for Slack,
 configured to perform a multitude of functions.
 """
 import contextlib
 import logging
+import random
+import sys
 
 from ..db import conn
 from ..error import SlackError
@@ -29,24 +31,29 @@ class Status(Plugin):
 
                 self.send(ch, 'J.A.R.V.I.S. online.')
 
-    def respond(self, ch=None, user=None, msg=None):
+    @Plugin.on_message(r'.*describe yourself.*')
+    def describe(self, ch, _user, _groups):
+        self.send(ch, __doc__.replace('\n', ' '))
+
+    @Plugin.on_message(r'.*(power off|shut down).*')
+    def die(self, ch, user, _groups):
         with contextlib.closing(conn.cursor()) as cur:
             admin = cur.execute(""" SELECT is_admin
                                     FROM user
                                     WHERE uuid = ?
-                                """, [user]).fetchone()
-            if admin and 'power off' in msg:
-                self.send(ch, 'As you wish.')
-                logger.debug('Shutting down by request.')
-                raise KeyboardInterrupt
+                                """, [user]).fetchone()[0]
 
-        if 'you there?' in msg:
-            self.send(ch, 'Oh hello, sir!')
-        elif 'you up?' in msg:
-            self.send(ch, 'At your service, sir.')
-        elif 'hello' in msg:
-            self.send(ch, 'Hello, I am Jarvis.')
-        elif "i'm back" in msg:
-            self.send(ch, 'Welcome home, sir...')
-        elif 'describe yourself' in msg:
-            self.send(ch, __doc__.replace('\n', ' '))
+        if admin:
+            self.send(ch, 'As you wish.')
+            logger.debug('Shutting down by request.')
+            sys.exit(0)
+
+    @Plugin.on_message(r".*i'm (back|home).*")
+    def im_back(self, ch, _user, _groups):
+        self.send(ch, 'Welcome home, sir...')
+
+    @Plugin.on_message(r'.*hello|(you (there|up)).*')
+    def you_there(self, ch, _user, _groups):
+        self.send(ch, random.choice(['At your service, sir.',
+                                     'Hello, I am Jarvis.',
+                                     'Oh hello, sir!']))

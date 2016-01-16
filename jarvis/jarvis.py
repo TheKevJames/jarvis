@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 from slackclient import SlackClient
 import logging
 import time

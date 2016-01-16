@@ -20,8 +20,12 @@ CREATE TABLE cash_pool (
 );
 CREATE TABLE cash_pool_history (
     id              INTEGER     PRIMARY KEY AUTOINCREMENT,
-    info            BLOB        NOT NULL,
-    created_at      TIMESTAMP   DEFAULT CURRENT_TIMESTAMP
+    source          CHAR(16)    NOT NULL,
+    targets         BLOB        NOT NULL,
+    value           REAL        NOT NULL,
+    reason          CHAR(512),
+    created_at      TIMESTAMP   DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (source) REFERENCES user(uuid)
 );
 """
 import sqlite3

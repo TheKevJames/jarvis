@@ -1,10 +1,6 @@
-import logging
 import random
 
 from ..plugin import Plugin
-
-
-logger = logging.getLogger(__name__)
 
 
 squirrels = [
@@ -28,8 +24,8 @@ squirrels = [
 
 
 class ShipIt(Plugin):
-    def respond(self, ch=None, user=None, msg=None):
-        if 'ship it' in msg:
-            logger.debug('Shipping it!')
-            self.send(ch, 'Will do, sir.')
-            self.send(ch, random.choice(squirrels))
+    @Plugin.on_message(r'.*ship(ping)? it.*')
+    def ship_it(self, ch, _user, _groups):
+        self.send(ch, 'Will do, sir.')
+        # TODO: attachment API
+        self.send(ch, random.choice(squirrels))
