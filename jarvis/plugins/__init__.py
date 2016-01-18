@@ -12,3 +12,5 @@ def get_plugins(slack):
         ShipIt(slack),
         Status(slack),
     ]
+
+# TODO: plugin for user-management. eg. "Jarvis, this is my private channel"

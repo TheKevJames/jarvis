@@ -19,6 +19,7 @@ WEATHER_URL = ('http://api.worldweatheronline.com/free/v2/weather.ashx?q=%s'
 
 class Location(Plugin):
     def respond(self, ch=None, user=None, msg=None):
+        # TODO: consider moving this to a user-management plugin
         if "i'm in" in msg:
             place = msg[msg.find("i'm in") + 7:].strip('.')
 
