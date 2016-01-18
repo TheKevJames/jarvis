@@ -15,11 +15,14 @@ logger = logging.getLogger(__name__)
 
 
 class Jarvis(object):
-    def __init__(self, token):
+    def __init__(self, token, init=False):
         self.last_ping = 0
 
         self.slack = slackclient.SlackClient(token)
         self.slack.rtm_connect()
+
+        if init:
+            self.init()
 
         self.plugins = get_plugins(self.slack)
 

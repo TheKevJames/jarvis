@@ -61,13 +61,10 @@ if __name__ == '__main__':
 
     try:
         token = os.environ['SLACK_TOKEN']
-        robot = jarvis.Jarvis(token)
+        robot = jarvis.Jarvis(token, arguments.get('--init'))
     except Exception as e:
         logger.error('Error initializing JARVIS.')
         logger.exception(e)
         sys.exit(-1)
-
-    if arguments.get('--init'):
-        robot.init()
 
     main(robot)

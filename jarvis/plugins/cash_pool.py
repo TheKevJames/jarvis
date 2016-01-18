@@ -74,11 +74,12 @@ class CashPool(Plugin):
         if not data:
             self.send(ch, 'All appears to be settled.')
 
-    @Plugin.on_message(r'(.*) (\w+) (sent|paid) \$([\d\.]+) (to|for) ([, \w]+)(\.)?')
+    @Plugin.on_message(r'(.*) (\w+) (sent|paid) \$([\d\.]+) ?(|cad|usd) (to|for) ([, \w]+)\.?')
     def send_cash(self, ch, user, groups):
-        reason, single, _direction, value, _, multiple, _ = groups
+        reason, single, _direction, value, currency, _, multiple = groups
         value = int(float(value) * 100)
 
+        # TODO: user is not on slack
         with contextlib.closing(conn.cursor()) as cur:
             if single == 'i':
                 s = user
@@ -101,21 +102,30 @@ class CashPool(Plugin):
                                              WHERE first_name = ?
                                          """, [item]).fetchone()[0]
 
+            if not currency:
+                currency = 'cad'
+
+            cur.execute(""" INSERT OR IGNORE INTO cash_pool (uuid)
+                            VALUES (?)
+                        """, [s])
             cur.execute(""" UPDATE cash_pool
-                            SET cad = cad - ?
+                            SET {} = {} - ?
                             WHERE uuid = ?
-                        """, [value, s])
+                        """.format(currency, currency), [value, s])
             m_value = int(round(value / len(m)))
             for p in m:
+                cur.execute(""" INSERT OR IGNORE INTO cash_pool (uuid)
+                                VALUES (?)
+                            """, [p])
                 cur.execute(""" UPDATE cash_pool
-                                SET cad = cad + ?
+                                SET {} = {} + ?
                                 WHERE uuid = ?
-                            """, [m_value, p])
+                            """.format(currency, currency), [m_value, p])
 
             cur.execute(""" INSERT INTO cash_pool_history (source, targets,
                                                            value, reason)
                             VALUES (?, ?, ?, ?)
-                        """, [s, str(m), value, reason[7:].strip()])
+                        """, [s, str(m), value / 100, reason[7:].strip()])
             conn.commit()
 
         self.send(ch, 'Very good, sir.')
