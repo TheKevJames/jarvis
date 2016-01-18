@@ -26,26 +26,30 @@ class CashPool(Plugin):
             recent = None
 
         with contextlib.closing(conn.cursor()) as cur:
-            history = cur.execute(""" SELECT source, targets, value, reason
+            history = cur.execute(""" SELECT source, targets, value, currency,
+                                             reason
                                       FROM cash_pool_history
                                       ORDER BY created_at DESC
                                   """).fetchall()
             lookup = {k: v for k, v in cur.execute(
                 """ SELECT uuid, first_name FROM user """).fetchall()}
 
+        message = []
         if not history:
-            self.send(ch, 'I have no record of a cash pool, sir.')
+            message.append('I have no record of a cash pool, sir.')
         elif recent is None:
-            self.send(ch, 'Very good, sir, displaying your history now:')
+            message.append('Very good, sir, displaying your history now:')
         else:
-            self.send(ch, 'Very good, sir, displaying recent history now:')
+            message.append('Very good, sir, displaying recent history now:')
 
         for item in history[recent:]:
-            source, targets, value, reason = item
+            source, targets, value, currency, reason = item
             targets = eval(targets)  # pylint: disable=W0123
-            self.send(ch, '{} -> {}: ${} {}'.format(
+            message.append('{} -> {}: ${} {} {}'.format(
                 lookup[source], ' and '.join(lookup[k] for k in targets),
-                value, reason))
+                value, currency.upper(), reason))
+
+        self.send(ch, '\n'.join(message))
 
     @Plugin.on_message(r'.*(display|show).*cash pool.*')
     def show_pool(self, ch, _user, _groups):
@@ -61,18 +65,21 @@ class CashPool(Plugin):
                                    ORDER BY first_name ASC
                                """).fetchall()
 
+        message = []
         for first_name, cad, usd in data:
             if cad:
-                self.send(ch, '{} {} ${}{}'.format(
+                message.append('{} {} ${}{}'.format(
                     first_name.title(), 'owes' if cad > 0 else 'is owed',
                     abs(cad), ' CAD' if usd else ''))
             if usd:
-                self.send(ch, '{} {} ${} USD'.format(
+                message.append('{} {} ${} USD'.format(
                     first_name.title(), 'owes' if usd > 0 else 'is owed',
                     abs(usd)))
 
         if not data:
-            self.send(ch, 'All appears to be settled.')
+            message.append('All appears to be settled.')
+
+        self.send(ch, '\n'.join(message))
 
     @Plugin.on_message(r'(.*) (\w+) (sent|paid) \$([\d\.]+) ?(|cad|usd) (to|for) ([, \w]+)\.?')
     def send_cash(self, ch, user, groups):
@@ -123,9 +130,11 @@ class CashPool(Plugin):
                             """.format(currency, currency), [m_value, p])
 
             cur.execute(""" INSERT INTO cash_pool_history (source, targets,
-                                                           value, reason)
-                            VALUES (?, ?, ?, ?)
-                        """, [s, str(m), value / 100, reason[7:].strip()])
+                                                           value, currency,
+                                                           reason)
+                            VALUES (?, ?, ?, ?, ?)
+                        """, [s, str(m), value / 100, currency,
+                              reason[7:].strip()])
             conn.commit()
 
         self.send(ch, 'Very good, sir.')

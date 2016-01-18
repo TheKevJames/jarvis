@@ -34,7 +34,7 @@ class Plugin(object):
         func.auth = True
         return func
 
-    # TODO: buffer, send in one message
+    # TODO: buffer, send in one message. Maybe a self.send_buffered?
     @staticmethod
     def send(channel, message):
         channel.send_message(message.encode('ascii', 'ignore'))

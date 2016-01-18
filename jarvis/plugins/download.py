@@ -45,9 +45,11 @@ class Download(Plugin):
                 self.send(ch, 'Sir, no torrents are {}.'.format(status[0]))
                 return
 
-            self.send(ch, 'For you, sir, always.')
+            message = ['For you, sir, always.']
             for torrent in sorted(files):
-                self.send(ch, torrent)
+                message.append(torrent)
+
+            self.send(ch, '\n'.join(message))
             return
 
         torrent = TORRENT.match(msg)

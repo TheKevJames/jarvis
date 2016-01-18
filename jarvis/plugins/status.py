@@ -2,15 +2,14 @@
 I am version {} of the J.A.R.V.I.S. natural language interface for Slack,
 configured to perform a multitude of functions.
 """
-import contextlib
 import logging
 import random
 import sys
 
-from ..db import conn
+from .. import __version__
+from ..db import get_admin_channels
 from ..error import SlackError
 from ..plugin import Plugin
-from .. import __version__
 
 
 logger = logging.getLogger(__name__)
@@ -20,20 +19,13 @@ class Status(Plugin):
     def __init__(self, *args, **kwargs):
         super(Status, self).__init__(*args, **kwargs)
 
-        with contextlib.closing(conn.cursor()) as cur:
-            for user in cur.execute(""" SELECT channel
-                                        FROM user
-                                        WHERE is_admin = 1
-                                    """).fetchall():
-                if not user[0]:
-                    continue
+        for channel in get_admin_channels():
+            ch = self.slack.server.channels.find(channel)
+            if not ch:
+                logger.error('Could not look up admin channel %s', channel)
+                raise SlackError()
 
-                ch = self.slack.server.channels.find(user[0])
-                if not ch:
-                    logger.error('Could not look up admin channel %s', user[0])
-                    raise SlackError()
-
-                self.send(ch, 'J.A.R.V.I.S. online.')
+            self.send(ch, 'J.A.R.V.I.S. online.')
 
     @Plugin.on_message(r'.*describe yourself.*')
     def describe(self, ch, _user, _groups):

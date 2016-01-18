@@ -29,6 +29,7 @@ CREATE TABLE cash_pool_history (
     source          CHAR(16)    NOT NULL,
     targets         BLOB        NOT NULL,
     value           REAL        NOT NULL,
+    currency        CHAR(8)     NOT NULL,
     reason          CHAR(512),
     created_at      TIMESTAMP   DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (source) REFERENCES user(uuid)
@@ -44,6 +45,16 @@ conn = sqlite3.connect('jarvis.db')
 def initialize_database():
     with contextlib.closing(conn.cursor()) as cur:
         cur.executescript(__doc__)
+
+
+def get_admin_channels():
+    with contextlib.closing(conn.cursor()) as cur:
+        for user in cur.execute(""" SELECT channel
+                                        FROM user
+                                        WHERE is_admin = 1
+                                    """).fetchall():
+            if user[0]:
+                yield user[0]
 
 
 def is_admin(uuid):
