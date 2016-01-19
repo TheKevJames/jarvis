@@ -14,6 +14,7 @@ from ..plugin import Plugin
 DELIMITED = re.compile(r"[\w']+")
 
 
+# TODO: "Jarvis, what is your default currency?"
 class CashPool(Plugin):
     @Plugin.on_message(r'.*explain.*cash pool.*')
     def explain(self, ch, _user, _groups):
