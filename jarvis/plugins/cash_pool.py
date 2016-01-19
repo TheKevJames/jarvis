@@ -1,8 +1,11 @@
 """
-You can ask me to "show the cash pool" if you would like to see your debts. You
-can also ask me to "show the cash pool history", if you'd prefer.
+You can ask me to "show the cash pool" if you would like to see the debts. You
+can also ask me to "show the cash pool's history", for an accounting of recent
+transactions. Though I'll only show the most recent transactions by default, I
+am able to "show the cash pool's entire history" on demand.
 Alternatively, you may inform me that "Tom sent $42 to Dick" or that "Tom paid
-$333 for Tom, Dick, and Harry".
+$333 for Tom, Dick, and Harry". When away from home, do be more specific: when
+in America, you should inform me that "Tom sent $42 USD to Dick."
 """
 import contextlib
 import re
@@ -16,8 +19,10 @@ DELIMITED = re.compile(r"[\w']+")
 
 # TODO: "Jarvis, what is your default currency?"
 class CashPool(Plugin):
-    @Plugin.on_message(r'.*explain.*cash pool.*')
-    def explain(self, ch, _user, _groups):
+    def __init__(self, slack):
+        super(CashPool, self).__init__(slack, 'cash_pool')
+
+    def help(self, ch):
         self.send(ch, __doc__.replace('\n', ' '))
 
     @Plugin.on_message(r'(.*cash pool.*history.*)')

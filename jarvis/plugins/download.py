@@ -20,15 +20,17 @@ WATCH_DIR = os.path.join(os.path.expanduser('~'), 'torrent', 'watch')
 
 
 class Download(Plugin):
-    def respond(self, ch=None, user=None, msg=None):
-        if 'explain how to torrent' in msg:
-            if not os.path.isdir(WATCH_DIR):
-                self.send(ch, 'Sir, this instance is not torrent-ready.')
-                return
+    def __init__(self, slack):
+        super(Download, self).__init__(slack, 'download')
 
-            self.send(ch, __doc__.replace('\n', ' '))
+    def help(self, ch):
+        if not os.path.isdir(WATCH_DIR):
+            self.send(ch, 'Sir, this instance is not torrent-ready.')
             return
 
+        self.send(ch, __doc__.replace('\n', ' '))
+
+    def respond(self, ch=None, user=None, msg=None):
         display = DISPLAY.match(msg)
         if display:
             status = display.groups()

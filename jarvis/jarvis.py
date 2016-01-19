@@ -1,3 +1,8 @@
+"""
+I am version {} of the J.A.R.V.I.S. natural language interface for Slack,
+configured to perform a multitude of functions. The following modules have been
+loaded:
+"""
 import contextlib
 import json
 import logging
@@ -9,6 +14,9 @@ from .db import conn
 from .db import initialize_database
 from .error import SlackError
 from .plugins import get_plugins
+
+
+__version__ = '1.2.1'
 
 
 logger = logging.getLogger(__name__)
@@ -72,6 +80,17 @@ class Jarvis(object):
             if not ch:
                 logger.error('Could not look up channel %s', channel)
                 raise SlackError('Channel {} does not exist.'.format(channel))
+
+            if 'help' in msg:
+                message = [__doc__.format(__version__).replace('\n', ' ')]
+                for plugin in self.plugins:
+                    message.append('- {}'.format(plugin.name))
+                    if plugin.name in msg:
+                        plugin.help(ch=ch)
+                        break
+                else:
+                    ch.send_message('\n'.join(message))
+                return
 
             user = data.get('user')
             for plugin in self.plugins:

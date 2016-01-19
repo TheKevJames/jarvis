@@ -1,3 +1,6 @@
+"""
+I have been configured to help you "ship it" upon command.
+"""
 import random
 
 from ..plugin import Plugin
@@ -24,6 +27,12 @@ squirrels = [
 
 
 class ShipIt(Plugin):
+    def __init__(self, slack):
+        super(ShipIt, self).__init__(slack, 'ship_it')
+
+    def help(self, ch):
+        self.send(ch, __doc__.replace('\n', ' '))
+
     @Plugin.on_message(r'.*ship(ping)? it.*')
     def ship_it(self, ch, _user, _groups):
         self.send(ch, 'Will do, sir.')

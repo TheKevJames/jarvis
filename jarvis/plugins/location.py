@@ -1,3 +1,8 @@
+"""
+You can ask me "how's the weather" if you would like an overview of the weather
+in your location. Do I have the wrong location? Please inform me of my
+inadequacies by telling me "I'm in _________."
+"""
 import contextlib
 import logging
 import os
@@ -18,6 +23,12 @@ WEATHER_URL = ('http://api.worldweatheronline.com/free/v2/weather.ashx?q=%s'
 
 
 class Location(Plugin):
+    def __init__(self, slack):
+        super(Location, self).__init__(slack, 'location')
+
+    def help(self, ch):
+        self.send(ch, __doc__.replace('\n', ' '))
+
     def respond(self, ch=None, user=None, msg=None):
         # TODO: consider moving this to a user-management plugin
         if "i'm in" in msg:
