@@ -36,12 +36,6 @@ def main(bot):
         bot.run()
     except KeyboardInterrupt:
         logger.info('Caught KeyboardInterrupt, shutting down.')
-        ch = bot.slack.server.channels.find('D0ATCUTN1')
-        if ch:
-            msg = 'I actually think I need to sleep now, sir.'.encode('ascii',
-                                                                      'ignore')
-            ch.send_message('{}'.format(msg))
-
         sys.exit(0)
     except Exception as e:
         logger.error('Error running JARVIS.')
