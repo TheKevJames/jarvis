@@ -106,13 +106,16 @@ class Jarvis(object):
             username = user['name']
             is_admin = int(user['is_admin'])
 
+            channel = json.loads(
+                self.slack.api_call('im.open', user=uuid))['channel']['id']
+
             with contextlib.closing(conn.cursor()) as cur:
                 cur.execute(""" INSERT OR REPLACE INTO user
                                 (uuid, first_name, last_name, email, username,
-                                 is_admin)
+                                 is_admin, channel)
                                 VALUES (?, ?, ?, ?, ?, ?)
                             """, [uuid, first_name, last_name, email, username,
-                                  is_admin])
+                                  is_admin, channel])
                 conn.commit()
 
     def keepalive(self):

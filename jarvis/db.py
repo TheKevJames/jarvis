@@ -3,7 +3,7 @@ DROP TABLE IF EXISTS user;
 CREATE TABLE user (
     id              INTEGER     PRIMARY KEY AUTOINCREMENT,
     uuid            CHAR(16)    UNIQUE NOT NULL,
-    channel         CHAR(16),
+    channel         CHAR(16)    NOT NULL,
     first_name      CHAR(64)    NOT NULL,
     last_name       CHAR(64),
     email           CHAR(128)   NOT NULL,
