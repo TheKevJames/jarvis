@@ -1,4 +1,3 @@
 *.pyc
 jarvis.db
 jarvis.log
-jarvis/seed_data.py

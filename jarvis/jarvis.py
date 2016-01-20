@@ -10,13 +10,14 @@ import time
 
 import slackclient
 
+from .api import build_user
 from .db import conn
 from .db import initialize_database
 from .error import SlackError
 from .plugins import get_plugins
 
 
-__version__ = '1.2.1'
+__version__ = '1.2.2'
 
 
 logger = logging.getLogger(__name__)
@@ -45,77 +46,64 @@ class Jarvis(object):
             if user['is_bot'] or user['id'] == 'USLACKBOT':
                 continue
 
-            uuid = user['id']
-            first_name = user['profile']['first_name'].lower()
-            last_name = user['profile']['last_name'].lower()
-            email = user['profile']['email']
-            username = user['name']
-            is_admin = int(user['is_admin'])
+            user_fields = build_user(self.slack, user)
             with contextlib.closing(conn.cursor()) as cur:
-                cur.execute(""" INSERT INTO user (uuid, first_name, last_name,
-                                                  email, username, is_admin)
-                                VALUES (?, ?, ?, ?, ?, ?)
-                            """, [uuid, first_name, last_name, email, username,
-                                  is_admin])
+                cur.execute(""" INSERT INTO user
+                                (uuid, first_name, last_name, email, username,
+                                 is_admin, channel)
+                                VALUES (?, ?, ?, ?, ?, ?, ?)
+                            """, user_fields)
                 conn.commit()
-
-        import os.path
-        if os.path.exists(os.path.join(
-                os.path.dirname(os.path.abspath(__file__)), 'seed_data.py')):
-            from .seed_data import init
-            init()
 
         logger.debug('Done initializing.')
 
-    def input(self, data):
-        msg_type = data.get('type')
-        if msg_type == 'message':
-            msg = data.get('text', '').lower()
-            # TODO: consider changing how Jarvis pays attention
-            if not msg.startswith('jarvis'):
-                return
+    def handle_message(self, channel, text, user):
+        with contextlib.closing(conn.cursor()) as cur:
+            dm = cur.execute(""" SELECT 1 FROM user WHERE channel = ? """,
+                             [channel]).fetchone()
 
-            channel = data.get('channel')
-            ch = self.slack.server.channels.find(channel)
-            if not ch:
-                logger.error('Could not look up channel %s', channel)
-                raise SlackError('Channel {} does not exist.'.format(channel))
-
-            if 'help' in msg:
-                message = [__doc__.format(__version__).replace('\n', ' ')]
-                for plugin in self.plugins:
-                    message.append('- {}'.format(plugin.name))
-                    if plugin.name in msg:
-                        plugin.help(ch=ch)
-                        break
-                else:
-                    ch.send_message('\n'.join(message))
-                return
-
-            user = data.get('user')
-            for plugin in self.plugins:
-                plugin.respond(ch=ch, user=user, msg=msg)
+        # TODO: consider changing how Jarvis pays attention to public channels
+        if not dm and not text.startswith('jarvis'):
             return
 
-        if msg_type == 'user_change':
-            user = data.get('user')
-            uuid = user['id']
-            first_name = user['profile']['first_name'].lower()
-            last_name = user['profile']['last_name'].lower()
-            email = user['profile']['email']
-            username = user['name']
-            is_admin = int(user['is_admin'])
+        ch = self.slack.server.channels.find(channel)
+        if not ch:
+            logger.error('Could not look up channel %s', channel)
+            raise SlackError('Channel {} does not exist.'.format(channel))
 
-            channel = json.loads(
-                self.slack.api_call('im.open', user=uuid))['channel']['id']
+        if 'help' in text:
+            message = [__doc__.format(__version__).replace('\n', ' ')]
+            for plugin in self.plugins:
+                message.append('- {}'.format(plugin.name))
+                if plugin.name in text:
+                    plugin.help(ch=ch)
+                    break
+            else:
+                ch.send_message('\n'.join(message))
+            return
 
+        for plugin in self.plugins:
+            plugin.respond(ch=ch, user=user, msg=text)
+
+    def input(self, data):
+        kind = data.get('type')
+
+        channel = data.get('channel')
+        text = data.get('text', '').lower()
+        user = data.get('user')
+
+        if kind == 'message':
+            self.handle_message(channel, text, user)
+            return
+
+        if kind == 'user_change':
+            user_fields = build_user(self.slack, user)
             with contextlib.closing(conn.cursor()) as cur:
                 cur.execute(""" INSERT OR REPLACE INTO user
                                 (uuid, first_name, last_name, email, username,
                                  is_admin, channel)
                                 VALUES (?, ?, ?, ?, ?, ?)
-                            """, [uuid, first_name, last_name, email, username,
-                                  is_admin, channel])
+                            """, user_fields)
                 conn.commit()
 
     def keepalive(self):
