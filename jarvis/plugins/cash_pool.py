@@ -6,6 +6,8 @@ am able to "show the cash pool's entire history" on demand.
 Alternatively, you may inform me that "Tom sent $42 to Dick" or that "Tom paid
 $333 for Tom, Dick, and Harry". When away from home, do be more specific: when
 in America, you should inform me that "Tom sent $42 USD to Dick."
+If you're curious as to which "currencies are supported" or what my "default
+currency" is, do let me know.
 """
 import contextlib
 import re
@@ -15,9 +17,10 @@ from ..plugin import Plugin
 
 
 DELIMITED = re.compile(r"[\w']+")
+CURRENCIES = ['CAD', 'USD']
+DEFAULT_CURRENCY = CURRENCIES[0]
 
 
-# TODO: "Jarvis, what is your default currency?"
 class CashPool(Plugin):
     def __init__(self, slack):
         super(CashPool, self).__init__(slack, 'cash_pool')
@@ -57,6 +60,7 @@ class CashPool(Plugin):
 
         self.send(ch, '\n'.join(message))
 
+    # TODO: un-hard-code currencies
     @Plugin.on_message(r'.*(display|show).*cash pool.*')
     def show_pool(self, ch, _user, _groups):
         self.send(ch, "I've analyzed your cash pool.")
@@ -87,7 +91,9 @@ class CashPool(Plugin):
 
         self.send(ch, '\n'.join(message))
 
-    @Plugin.on_message(r'(.*) (\w+) (sent|paid) \$([\d\.]+) ?(|cad|usd) (to|for) ([, \w]+)\.?')
+    @Plugin.on_message(r'(.*) (\w+) (sent|paid) \$([\d\.]+) ?(|{}) '
+                       r'(to|for) ([, \w]+)\.?'.format(
+                           '|'.join(CURRENCIES).lower()))
     def send_cash(self, ch, user, groups):
         reason, single, _direction, value, currency, _, multiple = groups
         value = int(float(value) * 100)
@@ -102,8 +108,7 @@ class CashPool(Plugin):
                                     WHERE first_name = ?
                                 """, [single]).fetchone()[0]
 
-            m = filter(lambda u: u != 'and',
-                       re.findall(DELIMITED, multiple))
+            m = filter(lambda u: u != 'and', re.findall(DELIMITED, multiple))
             for idx, item in enumerate(m):
                 if item == 'me':
                     m[idx] = user
@@ -116,7 +121,7 @@ class CashPool(Plugin):
                                          """, [item]).fetchone()[0]
 
             if not currency:
-                currency = 'cad'
+                currency = DEFAULT_CURRENCY.lower()
 
             cur.execute(""" INSERT OR IGNORE INTO cash_pool (uuid)
                             VALUES (?)
@@ -144,3 +149,19 @@ class CashPool(Plugin):
             conn.commit()
 
         self.send(ch, 'Very good, sir.')
+
+    @Plugin.on_message(r'.*currencies.*support(ed)?.*')
+    def get_all_currencies(self, ch, _user, _groups):
+        supported = CURRENCIES[:]
+        if len(supported) > 2:
+            for i in xrange(len(supported) - 1):
+                supported[i] = supported[i] + ','
+
+        supported.insert(-1, 'and')
+        supported = ' '.join(supported)
+
+        self.send(ch, 'I support {}.'.format(supported))
+
+    @Plugin.on_message(r'.*default.*currency.*')
+    def get_default_currency(self, ch, _user, _groups):
+        self.send(ch, 'My default currency is {}.'.format(DEFAULT_CURRENCY))

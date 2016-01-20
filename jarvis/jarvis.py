@@ -17,7 +17,7 @@ from .error import SlackError
 from .plugins import get_plugins
 
 
-__version__ = '1.2.2'
+__version__ = '1.2.3'
 
 
 logger = logging.getLogger(__name__)
