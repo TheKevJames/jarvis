@@ -13,4 +13,9 @@ def get_plugins(slack):
         Status(slack),
     ]
 
-# TODO: plugin for user-management. eg. "Jarvis, this is my private channel"
+# TODO: consider a plugin for user-management
+# TODO: music plugin
+# TODO: youshouldread plugin
+# TODO: plugins for github.com/thekevjames/*
+# TODO: phabricator plugin
+#       https://github.com/psjay/ph-slack/blob/master/ph_slack/web.py
