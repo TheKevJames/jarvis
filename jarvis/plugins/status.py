@@ -24,15 +24,15 @@ class Status(Plugin):
                 logger.error('Could not look up admin channel %s', channel)
                 raise SlackError()
 
-            self.send(ch, 'J.A.R.V.I.S. online.')
+            self.send_now(ch, 'J.A.R.V.I.S. online.')
 
     def help(self, ch):
-        self.send(ch, __doc__.replace('\n', ' '))
+        self.send_now(ch, __doc__.replace('\n', ' '))
 
     @Plugin.require_auth
     @Plugin.on_message(r'.*(power|shut) (off|down).*')
     def die(self, ch, _user, _groups):
-        self.send(ch, 'As you wish.')
+        self.send_now(ch, 'As you wish.')
         logger.debug('Shutting down by request.')
         sys.exit(0)
 

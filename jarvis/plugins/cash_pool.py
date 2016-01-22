@@ -26,7 +26,7 @@ class CashPool(Plugin):
         super(CashPool, self).__init__(slack, 'cash_pool')
 
     def help(self, ch):
-        self.send(ch, __doc__.replace('\n', ' '))
+        self.send_now(ch, __doc__.replace('\n', ' '))
 
     @Plugin.on_message(r'(.*cash pool.*history.*)')
     def show_history(self, ch, _user, groups):
@@ -43,22 +43,19 @@ class CashPool(Plugin):
             lookup = {k: v for k, v in cur.execute(
                 """ SELECT uuid, first_name FROM user """).fetchall()}
 
-        message = []
         if not history:
-            message.append('I have no record of a cash pool, sir.')
+            self.send(ch, 'I have no record of a cash pool, sir.')
         elif recent is None:
-            message.append('Very good, sir, displaying your history now:')
+            self.send(ch, 'Very good, sir, displaying your history now:')
         else:
-            message.append('Very good, sir, displaying recent history now:')
+            self.send(ch, 'Very good, sir, displaying recent history now:')
 
         for item in history[recent:]:
             source, targets, value, currency, reason = item
             targets = eval(targets)  # pylint: disable=W0123
-            message.append('{} -> {}: ${} {} {}'.format(
+            self.send(ch, '{} -> {}: ${} {} {}'.format(
                 lookup[source], ' and '.join(lookup[k] for k in targets),
                 value, currency.upper(), reason))
-
-        self.send(ch, '\n'.join(message))
 
     # TODO: un-hard-code currencies
     @Plugin.on_message(r'.*(display|show).*cash pool.*')
@@ -75,21 +72,18 @@ class CashPool(Plugin):
                                    ORDER BY first_name ASC
                                """).fetchall()
 
-        message = []
         for first_name, cad, usd in data:
             if cad:
-                message.append('{} {} ${}{}'.format(
+                self.send(ch, '{} {} ${}{}'.format(
                     first_name.title(), 'owes' if cad > 0 else 'is owed',
                     abs(cad), ' CAD' if usd else ''))
             if usd:
-                message.append('{} {} ${} USD'.format(
+                self.send(ch, '{} {} ${} USD'.format(
                     first_name.title(), 'owes' if usd > 0 else 'is owed',
                     abs(usd)))
 
         if not data:
-            message.append('All appears to be settled.')
-
-        self.send(ch, '\n'.join(message))
+            self.send(ch, 'All appears to be settled.')
 
     @Plugin.on_message(r'(.*) (\w+) (sent|paid) \$([\d\.]+) ?(|{}) '
                        r'(to|for) ([, \w]+)\.?'.format(

@@ -25,10 +25,10 @@ class Download(Plugin):
 
     def help(self, ch):
         if not os.path.isdir(WATCH_DIR):
-            self.send(ch, 'Sir, this instance is not torrent-ready.')
+            self.send_now(ch, 'Sir, this instance is not torrent-ready.')
             return
 
-        self.send(ch, __doc__.replace('\n', ' '))
+        self.send_now(ch, __doc__.replace('\n', ' '))
 
     def respond(self, ch=None, user=None, msg=None):
         display = DISPLAY.match(msg)
@@ -47,11 +47,10 @@ class Download(Plugin):
                 self.send(ch, 'Sir, no torrents are {}.'.format(status[0]))
                 return
 
-            message = ['For you, sir, always.']
+            self.send(ch, 'For you, sir, always.')
             for torrent in sorted(files):
-                message.append(torrent)
+                self.send(ch, torrent)
 
-            self.send(ch, '\n'.join(message))
             return
 
         torrent = TORRENT.match(msg)
@@ -73,6 +72,5 @@ class Download(Plugin):
                 self.send(ch, 'I could not access that url.')
                 return
 
-            self.send(ch,
-                      "I shall store this on the Stark Industries' "
-                      "Central Database.")
+            self.send(ch, "I shall store this on the Stark Industries' "
+                          "Central Database.")

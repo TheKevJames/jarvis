@@ -27,7 +27,7 @@ class Location(Plugin):
         super(Location, self).__init__(slack, 'location')
 
     def help(self, ch):
-        self.send(ch, __doc__.replace('\n', ' '))
+        self.send_now(ch, __doc__.replace('\n', ' '))
 
     def respond(self, ch=None, user=None, msg=None):
         # TODO: consider moving this to a user-management plugin

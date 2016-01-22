@@ -31,7 +31,7 @@ class ShipIt(Plugin):
         super(ShipIt, self).__init__(slack, 'ship_it')
 
     def help(self, ch):
-        self.send(ch, __doc__.replace('\n', ' '))
+        self.send_now(ch, __doc__.replace('\n', ' '))
 
     @Plugin.on_message(r'.*ship(ping)? it.*')
     def ship_it(self, ch, _user, _groups):

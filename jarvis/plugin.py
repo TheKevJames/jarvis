@@ -29,6 +29,12 @@ class Plugin(object):
         self.slack = slack
         self.name = name
 
+        self.buffer = None
+        self.reset_buffer()
+
+    def reset_buffer(self):
+        self.buffer = collections.defaultdict(list)
+
     @staticmethod
     def on_message(msg):
         def on_message_decorator(func):
@@ -41,9 +47,11 @@ class Plugin(object):
         func.auth = True
         return func
 
-    # TODO: buffer, send in one message. Maybe a self.send_buffered?
+    def send(self, channel, message):
+        self.buffer[channel].append(message)
+
     @staticmethod
-    def send(channel, message):
+    def send_now(channel, message):
         channel.send_message(message.encode('ascii', 'ignore'))
 
     def respond(self, ch, user, msg):
@@ -69,6 +77,10 @@ class Plugin(object):
                 continue
 
             fn(self, ch, user, regex_match.groups())
+            for channel, messages in self.buffer.iteritems():
+                self.send_now(channel, '\n'.join(messages))
+            self.reset_buffer()
+
             return
 
     def help(self, ch):
