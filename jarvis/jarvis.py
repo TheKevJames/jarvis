@@ -102,7 +102,7 @@ class Jarvis(object):
                 cur.execute(""" INSERT OR REPLACE INTO user
                                 (uuid, first_name, last_name, email, username,
                                  is_admin, channel)
-                                VALUES (?, ?, ?, ?, ?, ?)
+                                VALUES (?, ?, ?, ?, ?, ?, ?)
                             """, user_fields)
                 conn.commit()
 
