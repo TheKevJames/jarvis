@@ -21,6 +21,7 @@ CURRENCIES = ['CAD', 'USD']
 DEFAULT_CURRENCY = CURRENCIES[0]
 
 
+# TODO: undo last command
 class CashPool(Plugin):
     def __init__(self, slack):
         super(CashPool, self).__init__(slack, 'cash_pool')
@@ -28,6 +29,7 @@ class CashPool(Plugin):
     def help(self, ch):
         self.send_now(ch, __doc__.replace('\n', ' '))
 
+    # TODO: fix bug where large 'entire' history crashes Jarvis
     @Plugin.on_message(r'(.*cash pool.*history.*)')
     def show_history(self, ch, _user, groups):
         recent = -10
@@ -38,7 +40,7 @@ class CashPool(Plugin):
             history = cur.execute(""" SELECT source, targets, value, currency,
                                              reason
                                       FROM cash_pool_history
-                                      ORDER BY created_at DESC
+                                      ORDER BY created_at ASC
                                   """).fetchall()
             lookup = {k: v for k, v in cur.execute(
                 """ SELECT uuid, first_name FROM user """).fetchall()}
