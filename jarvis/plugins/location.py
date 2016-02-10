@@ -29,6 +29,7 @@ class Location(Plugin):
     def help(self, ch):
         self.send_now(ch, __doc__.replace('\n', ' '))
 
+    # TODO: migrate to Plugin.on_message
     def respond(self, ch=None, user=None, msg=None):
         # TODO: consider moving this to a user-management plugin
         if "i'm in" in msg:
@@ -84,7 +85,6 @@ class Location(Plugin):
                             greeting, time, city, current['temp_C'],
                             description, sunrise, sunset))
             except Exception as e:
-                logger.error('Error retrieving weather.')
                 logger.exception(e)
                 self.send(ch, 'I was unable to retrieve the weather.')
 

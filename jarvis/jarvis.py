@@ -5,7 +5,6 @@ loaded:
 """
 import contextlib
 import json
-import logging
 import time
 
 import slackclient
@@ -18,9 +17,6 @@ from .plugins import get_plugins
 
 
 __version__ = '1.2.3'
-
-
-logger = logging.getLogger(__name__)
 
 
 class Jarvis(object):
@@ -55,8 +51,6 @@ class Jarvis(object):
                             """, user_fields)
                 conn.commit()
 
-        logger.debug('Done initializing.')
-
     def handle_message(self, channel, text, user):
         with contextlib.closing(conn.cursor()) as cur:
             dm = cur.execute(""" SELECT 1 FROM user WHERE channel = ? """,
@@ -68,8 +62,7 @@ class Jarvis(object):
 
         ch = self.slack.server.channels.find(channel)
         if not ch:
-            logger.error('Could not look up channel %s', channel)
-            raise SlackError('Channel {} does not exist.'.format(channel))
+            raise SlackError('Could not look up channel {}.'.format(channel))
 
         if 'help' in text:
             message = [__doc__.format(__version__).replace('\n', ' ')]

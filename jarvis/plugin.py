@@ -1,13 +1,9 @@
 import collections
-import logging
 import re
 
 from .db import get_admin_channels
 from .db import is_admin
 from .error import SlackError
-
-
-logger = logging.getLogger(__name__)
 
 
 class PluginMetaclass(type):
@@ -67,9 +63,8 @@ class Plugin(object):
                 for channel in get_admin_channels:
                     ch = self.slack.server.channels.find(channel)
                     if not ch:
-                        logger.error('Could not look up channel %s', channel)
                         raise SlackError(
-                            'Channel {} does not exist.'.format(channel))
+                            'Could not look up channel {}'.format(channel))
 
                     self.send(ch, 'Unauthorized attempt from {}. '
                                   'Message was: {}'.format(user, msg))

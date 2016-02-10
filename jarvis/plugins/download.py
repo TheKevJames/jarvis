@@ -30,6 +30,7 @@ class Download(Plugin):
 
         self.send_now(ch, __doc__.replace('\n', ' '))
 
+    # TODO: migrate to Plugin.on_message
     def respond(self, ch=None, user=None, msg=None):
         display = DISPLAY.match(msg)
         if display:

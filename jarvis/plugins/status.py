@@ -21,8 +21,8 @@ class Status(Plugin):
         for channel in get_admin_channels():
             ch = self.slack.server.channels.find(channel)
             if not ch:
-                logger.error('Could not look up admin channel %s', channel)
-                raise SlackError()
+                raise SlackError(
+                    'Could not look up admin channel {}.'.format(channel))
 
             self.send_now(ch, 'J.A.R.V.I.S. online.')
 
