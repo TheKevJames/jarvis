@@ -23,7 +23,7 @@ import jarvis
 
 logger = logging.getLogger('jarvis')
 logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s %(levelname)s %(name)s: %(message)s')
+                    format='%(name)s (%(levelname)s): %(message)s')
 
 logging.getLogger('requests').setLevel(logging.WARNING)
 

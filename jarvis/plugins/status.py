@@ -29,6 +29,7 @@ class Status(Plugin):
     def help(self, ch):
         self.send_now(ch, __doc__.replace('\n', ' '))
 
+    # Split this into power off and reboot, use different exit codes?
     @Plugin.require_auth
     @Plugin.on_message(r'.*(power|shut) (off|down).*')
     def die(self, ch, _user, _groups):
