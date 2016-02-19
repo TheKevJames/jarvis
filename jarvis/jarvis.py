@@ -89,7 +89,8 @@ class Jarvis(object):
             self.handle_message(channel, text, user)
             return
 
-        if kind == 'user_change':
+        # TODO: handle new and changing users differently?
+        if kind in ('team_join', 'user_change'):
             user_fields = build_user(self.slack, user)
             with contextlib.closing(conn.cursor()) as cur:
                 cur.execute(""" INSERT OR REPLACE INTO user
@@ -98,6 +99,9 @@ class Jarvis(object):
                                 VALUES (?, ?, ?, ?, ?, ?, ?)
                             """, user_fields)
                 conn.commit()
+            return
+
+        logger.debug('Did not respond to event %s', data)
 
     def keepalive(self):
         now = int(time.time())
