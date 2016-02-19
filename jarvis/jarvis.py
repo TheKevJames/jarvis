@@ -84,6 +84,8 @@ class Jarvis(object):
 
     def input(self, data):
         kind = data.get('type')
+        if kind == 'pong':
+            return
 
         channel = data.get('channel')
         text = data.get('text', '').lower()
