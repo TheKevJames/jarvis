@@ -4,6 +4,7 @@ configured to perform a multitude of functions. The following modules have been
 loaded:
 """
 import contextlib
+import logging
 import json
 import time
 
@@ -17,6 +18,9 @@ from .plugins import get_plugins
 
 
 __version__ = '1.2.3'
+
+
+logger = logging.getLogger(__name__)
 
 
 class Jarvis(object):
