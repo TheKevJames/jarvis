@@ -141,7 +141,7 @@ class CashPool(Plugin):
                                                            value, currency,
                                                            reason)
                             VALUES (?, ?, ?, ?, ?)
-                        """, [s, str(m), value / 100, currency,
+                        """, [s, str(m), value / 100., currency,
                               reason.strip(' ,.?!')])
             conn.commit()
 
