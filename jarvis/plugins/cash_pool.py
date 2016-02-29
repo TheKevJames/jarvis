@@ -136,12 +136,13 @@ class CashPool(Plugin):
                                 WHERE uuid = ?
                             """.format(currency, currency), [m_value, p])
 
+            reason = reason[7:] if reason.startswith('jarvis') else reason
             cur.execute(""" INSERT INTO cash_pool_history (source, targets,
                                                            value, currency,
                                                            reason)
                             VALUES (?, ?, ?, ?, ?)
                         """, [s, str(m), value / 100, currency,
-                              reason[7:].strip()])
+                              reason.strip(' ,.?!')])
             conn.commit()
 
         self.send(ch, 'Very good, sir.')
