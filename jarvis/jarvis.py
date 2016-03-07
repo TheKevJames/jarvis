@@ -84,7 +84,7 @@ class Jarvis(object):
 
     def input(self, data):
         kind = data.get('type')
-        if kind in ('pong', 'reconnect_url', 'user_typing'):
+        if kind in ('pong', 'presence_change', 'reconnect_url', 'user_typing'):
             return
 
         channel = data.get('channel')
