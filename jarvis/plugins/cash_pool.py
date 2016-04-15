@@ -3,9 +3,14 @@ You can ask me to "show the cash pool" if you would like to see the debts. You
 can also ask me to "show the cash pool's history", for an accounting of recent
 transactions. Though I'll only show the most recent transactions by default, I
 am able to "show the cash pool's entire history" on demand.
+
 Alternatively, you may inform me that "Tom sent $42 to Dick" or that "Tom paid
 $333 for Tom, Dick, and Harry". When away from home, do be more specific: when
 in America, you should inform me that "Tom sent $42 USD to Dick."
+
+You can ask me to "revert my last cash pool change" if you make a mistake. Of
+course, I'll only let you revert your own changes.
+
 If you're curious as to which "currencies are supported" or what my "default
 currency" is, do let me know.
 """
@@ -21,7 +26,6 @@ CURRENCIES = ['CAD', 'USD']
 DEFAULT_CURRENCY = CURRENCIES[0]
 
 
-# TODO: undo last command
 class CashPool(Plugin):
     def __init__(self, slack):
         super(CashPool, self).__init__(slack, 'cash_pool')
@@ -38,7 +42,7 @@ class CashPool(Plugin):
 
         with contextlib.closing(conn.cursor()) as cur:
             history = cur.execute(""" SELECT source, targets, value, currency,
-                                             reason
+                                             reason, user
                                       FROM cash_pool_history
                                       ORDER BY created_at ASC
                                   """).fetchall()
@@ -53,8 +57,11 @@ class CashPool(Plugin):
             self.send(ch, 'Very good, sir, displaying recent history now:')
 
         for item in history[recent:]:
-            source, targets, value, currency, reason = item
+            source, targets, value, currency, reason, user = item
             targets = eval(targets)  # pylint: disable=W0123
+            if reason == 'REVERT':
+                reason = '[REVERTED BY {}]'.format(lookup[user])
+
             self.send(ch, '{} -> {}: ${} {} {}'.format(
                 lookup[source], ' and '.join(lookup[k] for k in targets),
                 value, currency.upper(), reason))
@@ -146,6 +153,60 @@ class CashPool(Plugin):
             conn.commit()
 
         self.send(ch, 'Very good, sir.')
+
+    @Plugin.on_message(r'.*revert my .*cash pool change.*')
+    def revert_own_change(self, ch, user, _groups):
+        with contextlib.closing(conn.cursor()) as cur:
+            last = cur.execute(""" SELECT source, targets, value, currency
+                                   FROM cash_pool_history
+                                   WHERE created_by = ?
+                                   ORDER BY created_at DESC
+                                   LIMIT 1
+                               """, [user]).fetchone()
+        if not last:
+            self.send(ch, 'I could not find a change to revert.')
+            return
+
+        source, targets, value, currency = last
+        target = eval(targets)  # pylint: disable=W0123
+
+        with contextlib.closing(conn.cursor()) as cur:
+            cur.execute(""" UPDATE cash_pool
+                                SET {} = {} + ?
+                                WHERE uuid = ?
+                            """.format(currency, currency), [value, source])
+
+            for target in targets:
+                m_value = int(round(value / len(targets)))
+                cur.execute(""" UPDATE cash_pool
+                                SET {} = {} - ?
+                                WHERE uuid = ?
+                            """.format(currency, currency), [m_value, target])
+
+            cur.execute(""" INSERT INTO cash_pool_history (source, targets,
+                                                           value, currency,
+                                                           reason, created_by)
+                            VALUES (?, ?, ?, ?, ?, ?)
+                        """, [source, str(targets), value / 100., currency,
+                              'REVERT', user])
+            conn.commit()
+
+        self.send(ch, "Yes, sir; I've cleaned up your tomfoolery.")
+
+    @Plugin.require_auth
+    @Plugin.on_message(r'.*revert the .*cash pool change.*')
+    def revert_any_change(self, ch, _user, groups):
+        with contextlib.closing(conn.cursor()) as cur:
+            user = cur.execute(""" SELECT user
+                                   FROM cash_pool_history
+                                   ORDER BY created_at DESC
+                                   LIMIT 1
+                               """).fetchone()
+        if not user:
+            self.send(ch, 'It appears no one has used this feature yet.')
+            return
+
+        self.revert_own_change(ch, user, groups)
 
     @Plugin.on_message(r'.*currencies.*support(ed)?.*')
     def get_all_currencies(self, ch, _user, _groups):
