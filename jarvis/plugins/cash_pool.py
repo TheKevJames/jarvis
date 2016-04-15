@@ -167,6 +167,7 @@ class CashPool(Plugin):
             return False
 
         source, targets, value, currency = last
+        value *= 100.
         target = eval(targets)  # pylint: disable=W0123
 
         with contextlib.closing(conn.cursor()) as cur:
