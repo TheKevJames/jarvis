@@ -31,7 +31,9 @@ CREATE TABLE cash_pool_history (
     value           REAL        NOT NULL,
     currency        CHAR(8)     NOT NULL,
     reason          CHAR(512),
+    created_by      CHAR(16)    NOT NULL,
     created_at      TIMESTAMP   DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (created_by) REFERENCES user(uuid),
     FOREIGN KEY (source) REFERENCES user(uuid)
 );
 """
