@@ -197,7 +197,7 @@ class CashPool(Plugin):
     @Plugin.on_message(r'.*revert the .*cash pool change.*')
     def revert_any_change(self, ch, _user, groups):
         with contextlib.closing(conn.cursor()) as cur:
-            user = cur.execute(""" SELECT user
+            user = cur.execute(""" SELECT created_by
                                    FROM cash_pool_history
                                    ORDER BY created_at DESC
                                    LIMIT 1
