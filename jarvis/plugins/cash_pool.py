@@ -154,8 +154,8 @@ class CashPool(Plugin):
 
         self.send(ch, 'Very good, sir.')
 
-    @Plugin.on_message(r'.*revert my .*cash pool change.*')
-    def revert_own_change(self, ch, user, _groups):
+    @staticmethod
+    def revert_user_change(user):
         with contextlib.closing(conn.cursor()) as cur:
             last = cur.execute(""" SELECT source, targets, value, currency
                                    FROM cash_pool_history
@@ -164,8 +164,7 @@ class CashPool(Plugin):
                                    LIMIT 1
                                """, [user]).fetchone()
         if not last:
-            self.send(ch, 'I could not find a change to revert.')
-            return
+            return False
 
         source, targets, value, currency = last
         target = eval(targets)  # pylint: disable=W0123
@@ -191,11 +190,19 @@ class CashPool(Plugin):
                               'REVERT', user])
             conn.commit()
 
+        return True
+
+    @Plugin.on_message(r'.*revert my .*cash pool change.*')
+    def revert_own_change(self, ch, user, _groups):
+        if not self.revert_user_change(user):
+            self.send(ch, 'I could not find a change to revert.')
+            return
+
         self.send(ch, "Yes, sir; I've cleaned up your tomfoolery.")
 
     @Plugin.require_auth
     @Plugin.on_message(r'.*revert the .*cash pool change.*')
-    def revert_any_change(self, ch, _user, groups):
+    def revert_any_change(self, ch, _user, _groups):
         with contextlib.closing(conn.cursor()) as cur:
             user = cur.execute(""" SELECT created_by
                                    FROM cash_pool_history
@@ -206,7 +213,11 @@ class CashPool(Plugin):
             self.send(ch, 'It appears no one has used this feature yet.')
             return
 
-        self.revert_own_change(ch, user, groups)
+        if not self.revert_user_change(user):
+            self.send(ch, 'I could not find a change to revert.')
+            return
+
+        self.send(ch, "Yes, sir; I've cleaned up the tomfoolery.")
 
     @Plugin.on_message(r'.*currencies.*support(ed)?.*')
     def get_all_currencies(self, ch, _user, _groups):
