@@ -42,7 +42,7 @@ class CashPool(Plugin):
 
         with contextlib.closing(conn.cursor()) as cur:
             history = cur.execute(""" SELECT source, targets, value, currency,
-                                             reason, user
+                                             reason, created_by
                                       FROM cash_pool_history
                                       ORDER BY created_at ASC
                                   """).fetchall()
