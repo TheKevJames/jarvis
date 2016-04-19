@@ -1,6 +1,6 @@
 """
 This module allows you to interact with my status; do stop in and say "hello"!
-Admins can also tell me to "shut down" for repairs or upgrades.
+Admins can also tell me to "shut down" or "reboot" for repairs or upgrades.
 """
 import logging
 import random
@@ -29,12 +29,20 @@ class Status(Plugin):
     def help(self, ch):
         self.send_now(ch, __doc__.replace('\n', ' '))
 
-    # Split this into power off and reboot, use different exit codes?
     @Plugin.require_auth
     @Plugin.on_message(r'.*(power|shut) (off|down).*')
     def die(self, ch, _user, _groups):
         self.send_now(ch, 'As you wish.')
         logger.debug('Shutting down by request.')
+        sys.exit(1)
+
+        self.send(ch, 'Remote shutdown unsuccessful.')
+
+    @Plugin.require_auth
+    @Plugin.on_message(r'.*reboot yourself.*')
+    def reboot(self, ch, _user, _groups):
+        self.send_now(ch, 'As you wish.')
+        logger.debug('Rebooting by request.')
         sys.exit(0)
 
         self.send(ch, 'Remote reboot unsuccessful.')
