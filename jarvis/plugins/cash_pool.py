@@ -33,7 +33,6 @@ class CashPool(Plugin):
     def help(self, ch):
         self.send_now(ch, __doc__.replace('\n', ' '))
 
-    # TODO: fix bug where large 'entire' history crashes Jarvis
     @Plugin.on_message(r'(.*cash pool.*history.*)')
     def show_history(self, ch, _user, groups):
         recent = -10
@@ -66,7 +65,6 @@ class CashPool(Plugin):
                 lookup[source], ' and '.join(lookup[k] for k in targets),
                 value, currency.upper(), reason))
 
-    # TODO: un-hard-code currencies
     @Plugin.on_message(r'.*(display|show).*cash pool.*')
     def show_pool(self, ch, _user, _groups):
         self.send(ch, "I've analyzed your cash pool.")
@@ -101,7 +99,6 @@ class CashPool(Plugin):
         reason, single, _direction, value, currency, _, multiple = groups
         value = int(float(value) * 100)
 
-        # TODO: user is not on slack
         with contextlib.closing(conn.cursor()) as cur:
             if single == 'i':
                 s = user

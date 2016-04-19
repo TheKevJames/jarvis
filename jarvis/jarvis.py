@@ -60,7 +60,6 @@ class Jarvis(object):
             dm = cur.execute(""" SELECT 1 FROM user WHERE channel = ? """,
                              [channel]).fetchone()
 
-        # TODO: consider changing how Jarvis pays attention to public channels
         if not dm and not text.startswith('jarvis'):
             return
 
@@ -95,7 +94,6 @@ class Jarvis(object):
             self.handle_message(channel, text, user)
             return
 
-        # TODO: handle new and changing users differently?
         if kind in ('team_join', 'user_change'):
             user_fields = build_user(self.slack, user)
             with contextlib.closing(conn.cursor()) as cur:
@@ -116,7 +114,6 @@ class Jarvis(object):
             self.last_ping = now
 
     def run(self):
-        # TODO: interrupt > poll
         while True:
             for message in self.slack.rtm_read():
                 self.input(message)
