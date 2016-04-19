@@ -82,7 +82,7 @@ class Jarvis(object):
             plugin.respond(ch=ch, user=user, msg=text)
 
     def input(self, data):
-        kind = data.get('type')
+        kind = data.get('type', 'pong')
         if kind in ('pong', 'presence_change', 'reconnect_url', 'user_typing'):
             return
 
