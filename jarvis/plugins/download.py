@@ -4,15 +4,10 @@ Asking me to "display the <status> torrents", where status is either
 'ongoing' or 'completed', will show a list of the appropriate torrents.
 """
 import os
-import re
 import subprocess
-import uuid
 
 from ..plugin import Plugin
 
-
-DISPLAY = re.compile(r"jarvis.* display the (\w+) torrents")
-TORRENT = re.compile(r"jarvis.* torrent (.+)")
 
 COMPLETED_DIR = os.path.join(os.path.expanduser('~'), 'torrent', 'done')
 ONGOING_DIR = os.path.join(os.path.expanduser('~'), 'torrent', 'incomplete')
@@ -30,48 +25,42 @@ class Download(Plugin):
 
         self.send_now(ch, __doc__.replace('\n', ' '))
 
-    # TODO: migrate to Plugin.on_message
-    def respond(self, ch=None, user=None, msg=None):
-        display = DISPLAY.match(msg)
-        if display:
-            status = display.groups()
-            if status[0] in ('incomplete', 'ongoing'):
-                target_directory = ONGOING_DIR
-            elif status[0] in ('completed', 'finished'):
-                target_directory = COMPLETED_DIR
-            else:
-                self.send(ch, "What is it you're trying to achieve, sir?")
-                return
-
-            files = os.listdir(target_directory)
-            if not files:
-                self.send(ch, 'Sir, no torrents are {}.'.format(status[0]))
-                return
-
-            self.send(ch, 'For you, sir, always.')
-            for torrent in sorted(files):
-                self.send(ch, torrent)
-
+    @Plugin.on_message(r'.*display the (\w+) torrents.*')
+    def display(self, ch, _user, groups):
+        status = groups[0]
+        if status in ('incomplete', 'ongoing'):
+            target_directory = ONGOING_DIR
+        elif status in ('completed', 'finished'):
+            target_directory = COMPLETED_DIR
+        else:
+            self.send(ch, "What is it you're trying to achieve, sir?")
             return
 
-        torrent = TORRENT.match(msg)
-        if torrent:
-            url = torrent.groups()
+        files = os.listdir(target_directory)
+        if not files:
+            self.send(ch, 'Sir, no torrents are {}.'.format(status[0]))
+            return
 
-            torrentfile = os.path.join(WATCH_DIR,
-                                       '{}.torrent'.format(uuid.uuid4()))
-            command = ['curl', '--globoff', url[0].strip('<>'), '--output',
-                       torrentfile]
-            if 'torrentday' in url[0]:
-                command.insert(1, '--cookie')
-                command.insert(2, os.environ['TORRENTDAY_COOKIE'])
+        self.send(ch, 'For you, sir, always.')
+        for torrent in sorted(files):
+            self.send(ch, torrent)
 
-            p = subprocess.Popen(command, stdout=subprocess.PIPE,
-                                 stderr=subprocess.PIPE)
-            code = p.wait()
-            if code != 0:
-                self.send(ch, 'I could not access that url.')
-                return
+    @Plugin.on_message(r'.*torrent (.+)\.?')
+    def download(self, ch, _user, groups):
+        url = groups[0].strip('<>')
 
-            self.send(ch, "I shall store this on the Stark Industries' "
-                          "Central Database.")
+        torrentfile = os.path.join(WATCH_DIR, '{}.torrent'.format(url))
+        command = ['curl', '--globoff', url, '--output', torrentfile]
+        if 'torrentday' in url[0]:
+            command.insert(1, '--cookie')
+            command.insert(2, os.environ['TORRENTDAY_COOKIE'])
+
+        p = subprocess.Popen(command, stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE)
+        code = p.wait()
+        if code != 0:
+            self.send(ch, 'I could not access that url.')
+            return
+
+        self.send(ch, "I shall store this on the Stark Industries' "
+                      "Central Database.")
