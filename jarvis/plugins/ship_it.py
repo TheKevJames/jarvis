@@ -36,5 +36,4 @@ class ShipIt(Plugin):
     @Plugin.on_message(r'.*ship(ping)? it.*')
     def ship_it(self, ch, _user, _groups):
         self.send(ch, 'Will do, sir.')
-        # TODO: attachment API
         self.send(ch, random.choice(squirrels))

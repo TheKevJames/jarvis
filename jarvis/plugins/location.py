@@ -29,63 +29,58 @@ class Location(Plugin):
     def help(self, ch):
         self.send_now(ch, __doc__.replace('\n', ' '))
 
-    # TODO: migrate to Plugin.on_message
-    def respond(self, ch=None, user=None, msg=None):
-        # TODO: consider moving this to a user-management plugin
-        if "i'm in" in msg:
-            place = msg[msg.find("i'm in") + 7:].strip('.')
+    @Plugin.on_message(r".*i'm in (.*)\.?")
+    def change_location(self, ch, user, groups):
+        place = groups[0]
 
-            with contextlib.closing(conn.cursor()) as cur:
-                cur.execute(""" INSERT OR REPLACE INTO user_data (uuid, place)
-                                VALUES (?, ?)""", [user, place])
-                conn.commit()
+        with contextlib.closing(conn.cursor()) as cur:
+            cur.execute(""" INSERT OR REPLACE INTO user_data (uuid, place)
+                            VALUES (?, ?)""", [user, place])
+            conn.commit()
+
+        self.send(ch,
+                  "Yes, sir. I've updated your location to {}.".format(place))
+
+    @Plugin.on_message(r".*how's the weather.*")
+    def get_weather(self, ch, user, _groups):
+        with contextlib.closing(conn.cursor()) as cur:
+            place = cur.execute(""" SELECT place
+                                    FROM user_data
+                                    WHERE uuid = ?
+                                """, [user]).fetchone()
+            place = place[0] if place else 'Waterloo'
+
+        try:
+            token = os.environ['WORLD_WEATHER_TOKEN']
+            rsp = requests.get(WEATHER_URL % (place, token)).json()['data']
+            if 'error' in rsp:
+                raise Exception(rsp)
+
+            # API parsing
+            astronomy = rsp['weather'][0]['astronomy'][0]
+            city = rsp['nearest_area'][0]['areaName'][0]['value']
+            current = rsp['current_condition'][0]
+            description = current['weatherDesc'][0]['value'].lower()
+            time = rsp['time_zone'][0]['localtime'].split(' ')[1]
+            sunrise = astronomy['sunrise'].lstrip('0')
+            sunset = astronomy['sunset'].lstrip('0')
+
+            hour = int(time.split(':')[0])
+            if 5 <= hour < 12:
+                greeting = 'Good morning'
+            elif 12 <= hour < 17:
+                greeting = 'Good afternoon'
+            elif 17 <= hour < 23:
+                greeting = 'Good evening'
+            else:
+                greeting = "You're up late"
 
             self.send(
-                ch, "Very good, sir. I've updated your location to {}.".format(
-                    place))
-            return
-
-        if "how's the weather" in msg:
-            with contextlib.closing(conn.cursor()) as cur:
-                place = cur.execute(""" SELECT place
-                                        FROM user_data
-                                        WHERE uuid = ?
-                                    """, [user]).fetchone() or 'Waterloo'
-
-            try:
-                token = os.environ['WORLD_WEATHER_TOKEN']
-                rsp = requests.get(WEATHER_URL % (place, token)).json()['data']
-                if 'error' in rsp:
-                    raise Exception(rsp)
-
-                # API parsing
-                astronomy = rsp['weather'][0]['astronomy'][0]
-                city = rsp['nearest_area'][0]['areaName'][0]['value']
-                current = rsp['current_condition'][0]
-                description = current['weatherDesc'][0]['value'].lower()
-                time = rsp['time_zone'][0]['localtime'].split(' ')[1]
-                sunrise = astronomy['sunrise'].lstrip('0')
-                sunset = astronomy['sunset'].lstrip('0')
-
-                hour = int(time.split(':')[0])
-                if 5 <= hour < 12:
-                    greeting = 'Good morning'
-                elif 12 <= hour < 17:
-                    greeting = 'Good afternoon'
-                elif 17 <= hour < 23:
-                    greeting = 'Good evening'
-                else:
-                    greeting = "You're up late"
-
-                # TODO: past/future tense
-                self.send(
-                    ch, "{}, sir. It's {}. The weather in {} is {} degrees "
-                        "Celsius and {}. Today's sunrise and sunset occur "
-                        "at {} and {}".format(
-                            greeting, time, city, current['temp_C'],
-                            description, sunrise, sunset))
-            except Exception as e:
-                logger.exception(e)
-                self.send(ch, 'I was unable to retrieve the weather.')
-
-            return
+                ch, "{}, sir. It's {}. The weather in {} is {} degrees "
+                    "Celsius and {}. Today's sunrise and sunset occur "
+                    "at {} and {}".format(
+                        greeting, time, city, current['temp_C'],
+                        description, sunrise, sunset))
+        except Exception as e:
+            logger.exception(e)
+            self.send(ch, 'I was unable to retrieve the weather.')
