@@ -23,6 +23,18 @@ __version__ = '1.4.0'
 logger = logging.getLogger(__name__)
 
 
+IGNORED_EVENTS = {
+    'dnd_updated_user',
+    'file_shared',
+    'pong',
+    'presence_change',
+    'reaction_added',
+    'reaction_removed',
+    'reconnect_url',
+    'user_typing',
+}
+
+
 class Jarvis(object):
     def __init__(self, token, init=False):
         self.last_ping = 0
@@ -32,6 +44,9 @@ class Jarvis(object):
 
         if init:
             self.init()
+
+            import sys
+            sys.exit(0)
 
         self.plugins = get_plugins(self.slack)
 
@@ -83,7 +98,7 @@ class Jarvis(object):
 
     def input(self, data):
         kind = data.get('type', 'pong')
-        if kind in ('pong', 'presence_change', 'reconnect_url', 'user_typing'):
+        if kind in IGNORED_EVENTS:
             return
 
         channel = data.get('channel')
