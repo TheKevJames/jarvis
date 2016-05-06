@@ -13,7 +13,6 @@ dependencies:
 test:
   override:
     - python setup.py test
-    - tox
   post:
     - mv htmlcov $CIRCLE_ARTIFACTS/coverage
     - mv .junitxml $CIRCLE_TEST_REPORTS/junit.xml

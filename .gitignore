@@ -1,6 +1,5 @@
 .cache/
 .eggs/
-.tox/
 build/
 dist/
 htmlcov/
