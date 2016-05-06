@@ -43,6 +43,7 @@ IGNORED_EVENTS = {
 }
 
 
+# MonkeyPatch for slackclient not properly supporting Python 3
 slackclient._channel.Channel.__hash__ = lambda self: hash(self.id)
 
 
