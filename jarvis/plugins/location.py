@@ -10,13 +10,13 @@ import re
 import requests
 
 from jarvis.core.db import conn
+import jarvis.core.messages as messages
 from jarvis.core.plugin import Plugin
 
 
 logger = logging.getLogger(__name__)
 
 
-MOVED = re.compile(r"jarvis.* i'm in ([ \w]+)")
 WEATHER_URL = ('http://api.worldweatheronline.com/free/v2/weather.ashx?q=%s'
                '&format=json&num_of_days=1&includelocation=yes'
                '&showlocaltime=yes&key=%s')
@@ -38,8 +38,7 @@ class Location(Plugin):
                             VALUES (?, ?)""", [user, place])
             conn.commit()
 
-        self.send(ch,
-                  "Yes, sir. I've updated your location to {}.".format(place))
+        self.send(ch, messages.UPDATED_LOCATION().format(place))
 
     @Plugin.on_message(r".*how's the weather.*")
     def get_weather(self, ch, user, _groups):
@@ -50,8 +49,12 @@ class Location(Plugin):
                                 """, [user]).fetchone()
             place = place[0] if place else 'Waterloo'
 
+        token = os.environ.get('WORLD_WEATHER_TOKEN')
+        if not token:
+            self.send(ch, messages.ERROR_NOT_ENABLED().format('weather'))
+            return
+
         try:
-            token = os.environ['WORLD_WEATHER_TOKEN']
             rsp = requests.get(WEATHER_URL % (place, token)).json()['data']
             if 'error' in rsp:
                 raise Exception(rsp)
@@ -76,11 +79,9 @@ class Location(Plugin):
                 greeting = "You're up late"
 
             self.send(
-                ch, "{}, sir. It's {}. The weather in {} is {} degrees "
-                    "Celsius and {}. Today's sunrise and sunset occur "
-                    "at {} and {}".format(
+                ch, messages.PRINT_WEATHER.format(
                         greeting, time, city, current['temp_C'],
                         description, sunrise, sunset))
         except Exception as e:
             logger.exception(e)
-            self.send(ch, 'I was unable to retrieve the weather.')
+            self.send(ch, messages.ERROR_RETRIEVING_WEATHER)

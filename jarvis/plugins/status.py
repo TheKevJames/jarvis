@@ -7,6 +7,8 @@ import random
 import sys
 
 from jarvis.core.db import get_admin_channels
+from jarvis.core.helper import get_channel_or_fail
+import jarvis.core.messages as messages
 from jarvis.core.plugin import Plugin
 
 
@@ -18,13 +20,8 @@ class Status(Plugin):
         super(Status, self).__init__(slack, 'status')
 
         for channel in get_admin_channels():
-            ch = self.slack.server.channels.find(channel)
-            if not ch:
-                logger.error(
-                    'Could not look up admin channel {}.'.format(channel))
-                sys.exit(1)
-
-            self.send_now(ch, 'J.A.R.V.I.S. online.')
+            ch = get_channel_or_fail(logger, self.slack, channel)
+            self.send_now(ch, messages.ONLINE)
 
     def help(self, ch):
         self.send_now(ch, __doc__.replace('\n', ' '))
@@ -32,27 +29,13 @@ class Status(Plugin):
     @Plugin.require_auth
     @Plugin.on_message(r'.*(power|shut) (off|down).*')
     def die(self, ch, _user, _groups):
-        self.send_now(ch, 'As you wish.')
-        logger.debug('Shutting down by request.')
-        sys.exit(1)
-
-        self.send(ch, 'Remote shutdown unsuccessful.')
-
-    @Plugin.require_auth
-    @Plugin.on_message(r'.*reboot yourself.*')
-    def reboot(self, ch, _user, _groups):
-        self.send_now(ch, 'As you wish.')
-        logger.debug('Rebooting by request.')
+        self.send_now(ch, messages.ACKNOWLEDGE())
         sys.exit(0)
 
-        self.send(ch, 'Remote reboot unsuccessful.')
-
     @Plugin.on_message(r".*i'm (back|home).*")
-    def im_back(self, ch, _user, _groups):
-        self.send(ch, 'Welcome home, sir...')
+    def home(self, ch, _user, _group):
+        self.send(ch, messages.WELCOME_HOME)
 
-    @Plugin.on_message(r'.*hello|(you (there|up)).*')
+    @Plugin.on_message(r".*hello|(you (there|up)).*")
     def you_there(self, ch, _user, _groups):
-        self.send(ch, random.choice(['At your service, sir.',
-                                     'Hello, I am Jarvis.',
-                                     'Oh hello, sir!']))
+        self.send(ch, messages.GREET())

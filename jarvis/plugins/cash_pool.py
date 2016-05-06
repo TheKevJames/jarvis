@@ -18,6 +18,7 @@ import contextlib
 import re
 
 from jarvis.core.db import conn
+import jarvis.core.messages as messages
 from jarvis.core.plugin import Plugin
 
 
@@ -49,11 +50,12 @@ class CashPool(Plugin):
                 """ SELECT uuid, first_name FROM user """).fetchall()}
 
         if not history:
-            self.send(ch, 'I have no record of a cash pool, sir.')
+            self.send(ch, messages.NO_RECORD.format('cash pool'))
+            return
         elif recent is None:
-            self.send(ch, 'Very good, sir, displaying your history now:')
+            self.send(ch, messages.DISPLAYING().format('history'))
         else:
-            self.send(ch, 'Very good, sir, displaying recent history now:')
+            self.send(ch, messages.DISPLAYING().format('recent history'))
 
         for item in history[recent:]:
             source, targets, value, currency, reason, user = item
@@ -208,14 +210,14 @@ class CashPool(Plugin):
                                    LIMIT 1
                                """).fetchone()
         if not user:
-            self.send(ch, 'It appears no one has used this feature yet.')
+            self.send(ch, messages.NO_USAGE)
             return
 
         if not self.revert_user_change(user):
-            self.send(ch, 'I could not find a change to revert.')
+            self.send(ch, messages.NO_REVERTABLE)
             return
 
-        self.send(ch, "Yes, sir; I've cleaned up the tomfoolery.")
+        self.send(ch, messages.CLEANED_UP)
 
     @Plugin.on_message(r'.*currencies.*support(ed)?.*')
     def get_all_currencies(self, ch, _user, _groups):
@@ -227,8 +229,8 @@ class CashPool(Plugin):
         supported.insert(-1, 'and')
         supported = ' '.join(supported)
 
-        self.send(ch, 'I support {}.'.format(supported))
+        self.send(ch, messages.SUPPORT.format(supported))
 
     @Plugin.on_message(r'.*default.*currency.*')
     def get_default_currency(self, ch, _user, _groups):
-        self.send(ch, 'My default currency is {}.'.format(DEFAULT_CURRENCY))
+        self.send(ch, messages.DEFAULT_CURRENCY.format(DEFAULT_CURRENCY))

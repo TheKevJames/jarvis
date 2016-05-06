@@ -6,6 +6,7 @@ Asking me to "display the <status> torrents", where status is either
 import os
 import subprocess
 
+import jarvis.core.messages as messages
 from jarvis.core.plugin import Plugin
 
 
@@ -20,7 +21,7 @@ class Download(Plugin):
 
     def help(self, ch):
         if not os.path.isdir(WATCH_DIR):
-            self.send_now(ch, 'Sir, this instance is not torrent-ready.')
+            self.send_now(ch, messages.ERROR_NOT_ENABLED.format('torrent'))
             return
 
         self.send_now(ch, __doc__.replace('\n', ' '))
@@ -33,7 +34,7 @@ class Download(Plugin):
         elif status in ('completed', 'finished'):
             target_directory = COMPLETED_DIR
         else:
-            self.send(ch, "What is it you're trying to achieve, sir?")
+            self.send(ch, messages.CONFUSED)
             return
 
         files = os.listdir(target_directory)
@@ -41,7 +42,7 @@ class Download(Plugin):
             self.send(ch, 'Sir, no torrents are {}.'.format(status[0]))
             return
 
-        self.send(ch, 'For you, sir, always.')
+        self.send(ch, messages.ACKNOWLEDGE())
         for torrent in sorted(files):
             self.send(ch, torrent)
 
@@ -52,15 +53,19 @@ class Download(Plugin):
         torrentfile = os.path.join(WATCH_DIR, '{}.torrent'.format(url))
         command = ['curl', '--globoff', url, '--output', torrentfile]
         if 'torrentday' in url[0]:
+            cookie = os.environ.get('TORRENTDAY_COOKIE')
+            if not cookie:
+                self.send(ch, messages.ERROR_NOT_ENABLED.format('torrent'))
+                return
+
             command.insert(1, '--cookie')
-            command.insert(2, os.environ['TORRENTDAY_COOKIE'])
+            command.insert(2, cookie)
 
         p = subprocess.Popen(command, stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE)
         code = p.wait()
         if code != 0:
-            self.send(ch, 'I could not access that url.')
+            self.send(ch, messages.ERROR_ACCESS_URL)
             return
 
-        self.send(ch, "I shall store this on the Stark Industries' "
-                      "Central Database.")
+        self.send(ch, messages.WILL_STORE)

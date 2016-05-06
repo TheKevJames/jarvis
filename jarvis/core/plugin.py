@@ -5,6 +5,8 @@ import sys
 
 from jarvis.core.db import get_admin_channels
 from jarvis.core.db import is_admin
+from jarvis.core.helper import get_channel_or_fail
+import jarvis.core.messages as messages
 
 
 logger = logging.getLogger(__name__)
@@ -61,18 +63,11 @@ class Plugin(object):
                 continue
 
             if hasattr(fn, 'auth') and not is_admin(user):
-                self.send(ch, 'You are not authorised to access this area. '
-                              'I am contacting Mr. Stark now.')
+                self.send(ch, messages.NO_AUTHORIZATION)
 
                 for channel in get_admin_channels:
-                    ch = self.slack.server.channels.find(channel)
-                    if not ch:
-                        logger.error(
-                            'Could not look up channel {}'.format(channel))
-                        sys.exit(1)
-
-                    self.send(ch, 'Unauthorized attempt from {}. '
-                                  'Message was: {}'.format(user, msg))
+                    ch = get_channel_or_fail(logger, self.slack, channel)
+                    self.send(ch, UNAUTHORIZED_USAGE.format(user, msg))
 
                 continue
 

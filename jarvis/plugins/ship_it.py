@@ -3,6 +3,7 @@ I have been configured to help you "ship it" upon command.
 """
 import random
 
+import jarvis.core.messages as messages
 from jarvis.core.plugin import Plugin
 
 
@@ -35,5 +36,5 @@ class ShipIt(Plugin):
 
     @Plugin.on_message(r'.*ship(ping)? it.*')
     def ship_it(self, ch, _user, _groups):
-        self.send(ch, 'Will do, sir.')
+        self.send(ch, messages.ACKNOWLEDGE())
         self.send(ch, random.choice(squirrels))
