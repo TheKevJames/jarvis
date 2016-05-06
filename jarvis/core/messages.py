@@ -1,9 +1,10 @@
+# pylint: disable=E302
 import random
 
 
 def ACKNOWLEDGE():
     return random.choice((
-        'As you wish.', 'For you, sir, always.', 'Very good, sir.',
+        'As you wish.', 'Check.', 'For you, sir, always.', 'Very good, sir.',
         'Will do, sir.', 'Yes, sir.'))
 CONFUSED = "What is it you're trying to achieve, sir?"
 def GREET():
@@ -24,15 +25,16 @@ interface for Slack.
 """.replace('\n', ' ')
 
 
+def CLEANED_UP():
+    return random.choice((
+        'All wrapped up here, sir. Will there be anything else?',
+        "Yes, sir; I've cleaned up the tomfoolery."))
 ERROR_ACCESS_URL = 'I could not access that url.'
 def ERROR_NOT_ENABLED():
     return random.choice((
         'Sir, this instance is not {}-ready.',
         'Sorry sir, this instance is not configured for {}.'))
 ERROR_RETRIEVING_WEATHER = 'I was unable to retrieve the weather.'
-
-
-CLEANED_UP = "Yes, sir; I've cleaned up the tomfoolery."
 DEFAULT_CURRENCY = 'My default currency is {}.'
 def DISPLAYING():
     return ACKNOWLEDGE() + ' Displaying your {} now:'
