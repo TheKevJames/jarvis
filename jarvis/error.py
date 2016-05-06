@@ -1,2 +1,0 @@
-class SlackError(Exception):
-    pass

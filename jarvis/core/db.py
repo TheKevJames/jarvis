@@ -41,12 +41,25 @@ import contextlib
 import sqlite3
 
 
+from jarvis.core.helper import get_user_fields
+
+
 conn = sqlite3.connect('jarvis.db')
 
 
 def initialize_database():
     with contextlib.closing(conn.cursor()) as cur:
         cur.executescript(__doc__)
+
+
+def create_user(slack, user):
+    with contextlib.closing(conn.cursor()) as cur:
+        cur.execute(""" INSERT INTO user
+                        (uuid, first_name, last_name, email, username,
+                         is_admin, channel)
+                        VALUES (?, ?, ?, ?, ?, ?, ?) """,
+                    get_user_fields(slack, user))
+        conn.commit()
 
 
 def get_admin_channels():
@@ -67,3 +80,19 @@ def is_admin(uuid):
                             """, [uuid]).fetchone()
 
     return admin[0]
+
+
+def is_direct_channel(channel):
+    with contextlib.closing(conn.cursor()) as cur:
+        return cur.execute(""" SELECT 1 FROM user WHERE channel = ? """,
+                           [channel]).fetchone()
+
+
+def update_user(slack, user):
+    with contextlib.closing(conn.cursor()) as cur:
+        cur.execute(""" INSERT OR REPLACE INTO user
+                        (uuid, first_name, last_name, email, username,
+                         is_admin, channel)
+                        VALUES (?, ?, ?, ?, ?, ?, ?)
+                    """, get_user_fields(slack, user))
+        conn.commit()

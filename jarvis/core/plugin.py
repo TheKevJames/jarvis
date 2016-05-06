@@ -1,9 +1,13 @@
 import collections
+import logging
 import re
+import sys
 
-from .db import get_admin_channels
-from .db import is_admin
-from .error import SlackError
+from jarvis.core.db import get_admin_channels
+from jarvis.core.db import is_admin
+
+
+logger = logging.getLogger(__name__)
 
 
 class PluginMetaclass(type):
@@ -13,7 +17,7 @@ class PluginMetaclass(type):
 
     def __new__(mcs, name, bases, namespace, **_kwargs):
         result = type.__new__(mcs, name, bases, dict(namespace))
-        result.response_fns = [fn for fn in sorted(namespace.values())
+        result.response_fns = [fn for fn in namespace.values()
                                if hasattr(fn, 'regex')]
         return result
 
@@ -63,8 +67,9 @@ class Plugin(object):
                 for channel in get_admin_channels:
                     ch = self.slack.server.channels.find(channel)
                     if not ch:
-                        raise SlackError(
+                        logger.error(
                             'Could not look up channel {}'.format(channel))
+                        sys.exit(1)
 
                     self.send(ch, 'Unauthorized attempt from {}. '
                                   'Message was: {}'.format(user, msg))

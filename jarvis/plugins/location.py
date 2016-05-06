@@ -9,8 +9,8 @@ import os
 import re
 import requests
 
-from ..db import conn
-from ..plugin import Plugin
+from jarvis.core.db import conn
+from jarvis.core.plugin import Plugin
 
 
 logger = logging.getLogger(__name__)

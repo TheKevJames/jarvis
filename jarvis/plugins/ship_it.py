@@ -3,7 +3,7 @@ I have been configured to help you "ship it" upon command.
 """
 import random
 
-from ..plugin import Plugin
+from jarvis.core.plugin import Plugin
 
 
 squirrels = [

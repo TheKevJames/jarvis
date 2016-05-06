@@ -6,7 +6,7 @@ Asking me to "display the <status> torrents", where status is either
 import os
 import subprocess
 
-from ..plugin import Plugin
+from jarvis.core.plugin import Plugin
 
 
 COMPLETED_DIR = os.path.join(os.path.expanduser('~'), 'torrent', 'done')

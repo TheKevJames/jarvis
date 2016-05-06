@@ -17,8 +17,8 @@ currency" is, do let me know.
 import contextlib
 import re
 
-from ..db import conn
-from ..plugin import Plugin
+from jarvis.core.db import conn
+from jarvis.core.plugin import Plugin
 
 
 DELIMITED = re.compile(r"[\w']+")
@@ -221,7 +221,7 @@ class CashPool(Plugin):
     def get_all_currencies(self, ch, _user, _groups):
         supported = CURRENCIES[:]
         if len(supported) > 2:
-            for i in xrange(len(supported) - 1):
+            for i in range(len(supported) - 1):
                 supported[i] = supported[i] + ','
 
         supported.insert(-1, 'and')

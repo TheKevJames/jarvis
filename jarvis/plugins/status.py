@@ -6,9 +6,8 @@ import logging
 import random
 import sys
 
-from ..db import get_admin_channels
-from ..error import SlackError
-from ..plugin import Plugin
+from jarvis.core.db import get_admin_channels
+from jarvis.core.plugin import Plugin
 
 
 logger = logging.getLogger(__name__)
@@ -21,8 +20,9 @@ class Status(Plugin):
         for channel in get_admin_channels():
             ch = self.slack.server.channels.find(channel)
             if not ch:
-                raise SlackError(
+                logger.error(
                     'Could not look up admin channel {}.'.format(channel))
+                sys.exit(1)
 
             self.send_now(ch, 'J.A.R.V.I.S. online.')
 

@@ -1,2 +1,15 @@
+.cache/
+.eggs/
+.tox/
+build/
+dist/
+htmlcov/
+
+*.egg-info
 *.pyc
+
+bin/linux/amd64/github-release
 jarvis.db
+jarvis.spec
+.coverage
+.junitxml
