@@ -4,12 +4,9 @@ set -eu
 export GIT_ROOT=$(git rev-parse --show-toplevel)
 
 /usr/bin/env python setup.py install
-/usr/local/bin/jarvis-init
 
 cp "${GIT_ROOT}/extra/consul.json" /etc/consul.d/jarvis.json
 (set +e; systemctl restart consul)
 
 cp "${GIT_ROOT}/extra/environment.sh" /etc/jarvis.conf
-cp "${GIT_ROOT}/extra/service.sysd" /etc/systemd/system/jarvis.service
-systemctl enable jarvis
-(set +e; systemctl start jarvis)
+cp "${GIT_ROOT}/extra/service-update.sysd" /etc/systemd/system/jarvis-update.service

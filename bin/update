@@ -10,10 +10,11 @@ git reset --hard HEAD
 git checkout $(git describe --abbrev=0 --tags)
 
 /usr/bin/env python setup.py install
-/usr/local/bin/jarvis-update
+(set +e; systemctl start jarvis-update)
 
 cp "${GIT_ROOT}/extra/consul.json" /etc/consul.d/jarvis.json
 (set +e; systemctl restart consul)
 
 cp "${GIT_ROOT}/extra/service.sysd" /etc/systemd/system/jarvis.service
+cp "${GIT_ROOT}/extra/service-update.sysd" /etc/systemd/system/jarvis-update.service
 (set +e; systemctl start jarvis)
