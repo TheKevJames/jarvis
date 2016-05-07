@@ -1,12 +1,16 @@
+import re
 import sys
 
-from jarvis.core.messages import NO_CHANNEL_FOUND
+import jarvis.core.messages as messages
+
+
+DELIMITED = re.compile(r"[\w']+")
 
 
 def get_channel_or_fail(logger, slack, channel):
     ch = slack.server.channels.find(channel)
     if not ch:
-        logger.error(NO_CHANNEL_FOUND.format(channel))
+        logger.error(messages.NO_CHANNEL_FOUND(channel))
         sys.exit(1)
 
     return ch
@@ -22,3 +26,16 @@ def get_user_fields(slack, user):
 
     channel = slack.api_call('im.open', user=uuid)['channel']['id']
     return uuid, first_name, last_name, email, username, is_admin, channel
+
+
+def language_to_list(items):
+    return filter(lambda u: u != 'and', re.findall(DELIMITED, items))
+
+
+def list_to_language(items):
+    if len(items) > 2:
+        for i in xrange(len(items) - 1):
+            items[i] = items[i] + ','
+
+    items.insert(-1, 'and')
+    return ' '.join(items)

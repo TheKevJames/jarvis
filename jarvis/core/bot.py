@@ -3,48 +3,28 @@ import logging
 import sys
 import time
 
+from setuptools_scm import get_version
 import slackclient
 
-from jarvis.core.db import create_user
-from jarvis.core.db import update_user
-from jarvis.core.db import initialize_database
-from jarvis.core.db import is_direct_channel
-from jarvis.core.helper import get_channel_or_fail
-from jarvis.core.messages import DESCRIBE
-from jarvis.core.messages import UPDATED
+import jarvis.core.helper as helper
+import jarvis.core.messages as messages
+import jarvis.db.channels as channels
+import jarvis.db.schema as schema
+import jarvis.db.users as users
 from jarvis.plugins import get_plugins
+
+
+# MonkeyPatch for slackclient not properly supporting Python 3
+slackclient._channel.Channel.__hash__ = lambda self: hash(self.id)
 
 
 logger = logging.getLogger(__name__)
 
 
 try:
-    from setuptools_scm import get_version
     __version__ = get_version()
-except Exception as e:
-    logger.error('Could not get version information.')
-    logger.exception(e)
-    __version__ = 'xxx-version-error'
-
-
-IGNORED_EVENTS = {
-    'channel_joined',
-    'dnd_updated_user',
-    'file_shared',
-    'hello',
-    'pong',
-    'pin_added',
-    'pin_removed',
-    'presence_change',
-    'reaction_added',
-    'reaction_removed',
-    'reconnect_url',
-    'user_typing',
-}
-
-
-# MonkeyPatch for slackclient not properly supporting Python 3
-slackclient._channel.Channel.__hash__ = lambda self: hash(self.id)
+except LookupError:
+    __version__ = 'XXX-UNCONFIGURED'
 
 
 class Jarvis(object):
@@ -61,27 +41,28 @@ class Jarvis(object):
             sys.exit(1)
 
     def init(self):
-        initialize_database()
+        schema.initialize()
 
-        users = self.slack.api_call('users.list')
-        for user in users['members']:
+        user_list = self.slack.api_call('users.list')
+        for user in user_list['members']:
             if user['deleted']:
                 continue
 
             if user['is_bot'] or user['id'] == 'USLACKBOT':
                 continue
 
-            create_user(self.slack, user)
+            user = helper.get_user_fields(self.slack, user)
+            users.UsersDal.create(*user)
 
     def update(self):
-        ch = get_channel_or_fail(logger, self.slack, 'general')
-        ch.send_message(UPDATED.format(__version__))
+        ch = helper.get_channel_or_fail(logger, self.slack, 'general')
+        ch.send_message(messages.UPDATED(__version__))
 
     def handle_message(self, channel, text, user):
-        ch = get_channel_or_fail(logger, self.slack, channel)
+        ch = helper.get_channel_or_fail(logger, self.slack, channel)
 
         if 'help' in text:
-            message = [DESCRIBE.format(__version__)]
+            message = [messages.DESCRIBE(__version__)]
             for plugin in self.plugins:
                 message.append('- {}'.format(plugin.name))
                 if plugin.name in text:
@@ -95,21 +76,23 @@ class Jarvis(object):
             plugin.respond(ch=ch, user=user, msg=text)
 
     def input(self, data):
-        kind = data.get('type', 'pong')
-        if kind in IGNORED_EVENTS:
-            return
-
-        channel = data.get('channel')
-        text = data.get('text', '').lower()
-        user = data.get('user')
+        kind = data.get('type')
 
         if kind == 'message':
-            if is_direct_channel(channel) or text.startswith('jarvis'):
-                self.handle_message(channel, text, user)
-        elif kind in ('team_join', 'user_change'):
-            update_user(self.slack, user)
-        else:
-            logger.debug('Did not respond to event %s', data)
+            ch = data.get('channel')
+            text = data.get('text', '').lower()
+            if channels.ChannelsDal.is_direct(ch) or text.startswith('jarvis'):
+                user = data.get('user')
+                self.handle_message(ch, text, user)
+
+            return
+
+        if kind in ('team_join', 'user_change'):
+            user = data.get('user')
+            user = helper.get_user_fields(self.slack, user)
+
+            users.UsersDal.update(*user)
+            return
 
     def keepalive(self):
         now = int(time.time())
@@ -118,15 +101,15 @@ class Jarvis(object):
             self.last_ping = now
 
     def run(self):
-        try:
-            self.plugins = get_plugins(self.slack)
+        self.plugins = get_plugins(self.slack)
 
-            while True:
+        while True:
+            try:
                 for message in self.slack.rtm_read():
                     self.input(message)
 
                 self.keepalive()
                 time.sleep(.1)
-        except Exception as e:
-            logger.exception(e)
-            sys.exit(1)
+            except Exception as e:
+                logger.error('Caught unhandled exception, continuing...')
+                logger.exception(e)

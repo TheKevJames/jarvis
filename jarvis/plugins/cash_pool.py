@@ -14,223 +14,193 @@ course, I'll only let you revert your own changes.
 If you're curious as to which "currencies are supported" or what my "default
 currency" is, do let me know.
 """
-import contextlib
-import re
-
-from jarvis.core.db import conn
+import jarvis.db.dal as dal
+import jarvis.db.users as users
+import jarvis.core.helper as helper
 import jarvis.core.messages as messages
-from jarvis.core.plugin import Plugin
+import jarvis.core.plugin as plugin
 
 
-DELIMITED = re.compile(r"[\w']+")
 CURRENCIES = ['CAD', 'USD']
 DEFAULT_CURRENCY = CURRENCIES[0]
 
 
-class CashPool(Plugin):
+class CashPoolDal(dal.Dal):
+    def read(cur):
+        return cur.execute(""" SELECT first_name,
+                                      CAST(cad AS FLOAT) / 100,
+                                      CAST(usd AS FLOAT) / 100
+                               FROM cash_pool
+                               INNER JOIN user
+                                   ON user.uuid = cash_pool.uuid
+                               WHERE cad <> 0 OR usd <> 0
+                               ORDER BY first_name ASC
+                           """).fetchall()
+
+    ensure = 'INSERT OR IGNORE INTO cash_pool(uuid) VALUES(?)'
+    update_by_currency_dec = 'UPDATE cash_pool SET {} = {} - ? WHERE uuid = ?'
+    update_by_currency_inc = 'UPDATE cash_pool SET {} = {} + ? WHERE uuid = ?'
+
+    def update(cur, source, targets, value, currency):
+        dec = CashPoolDal.update_by_currency_dec.format(currency, currency)
+        inc = CashPoolDal.update_by_currency_inc.format(currency, currency)
+
+        cur.execute(CashPoolDal.ensure, [source])
+        cur.execute(dec, [value, source])
+        for target in targets:
+            target_value = int(round(value / len(targets)))
+            cur.execute(CashPoolDal.ensure, [target])
+            cur.execute(inc, [target_value, target])
+
+
+class CashPoolHistoryDal(dal.Dal):
+    def create(cur, source, targets, value, currency, reason, user):
+        cur.execute(""" INSERT INTO cash_pool_history (source, targets,
+                                                       value, currency,
+                                                       reason, created_by)
+                        VALUES (?, ?, ?, ?, ?, ?)
+                    """, [source, targets, value, currency, reason, user])
+
+    def read(cur):
+        return cur.execute(""" SELECT source, targets, value, currency,
+                                      reason, created_by
+                               FROM cash_pool_history
+                               ORDER BY created_at ASC
+                           """).fetchall()
+
+    def read_most_recent_by_user(cur, user):
+        return cur.execute(""" SELECT source, targets, value, currency
+                               FROM cash_pool_history
+                               WHERE created_by = ?
+                               ORDER BY created_at DESC
+                               LIMIT 1
+                           """, [user]).fetchone()
+
+    def read_most_recent_user(cur):
+        return cur.execute(""" SELECT created_by
+                               FROM cash_pool_history
+                               ORDER BY created_at DESC
+                               LIMIT 1
+                           """).fetchone()
+
+
+class CashPool(plugin.Plugin):
     def __init__(self, slack):
         super(CashPool, self).__init__(slack, 'cash_pool')
 
     def help(self, ch):
         self.send_now(ch, __doc__.replace('\n', ' '))
 
-    @Plugin.on_message(r'(.*cash pool.*history.*)')
+    @plugin.Plugin.on_message(r'(.*cash pool.*history.*)')
     def show_history(self, ch, _user, groups):
+        history = CashPoolHistoryDal.read()
+        if not history:
+            self.send(ch, messages.NO_RECORD('cash pool'))
+            return
+
         recent = -10
         if any('entire' in g for g in groups):
             recent = None
-
-        with contextlib.closing(conn.cursor()) as cur:
-            history = cur.execute(""" SELECT source, targets, value, currency,
-                                             reason, created_by
-                                      FROM cash_pool_history
-                                      ORDER BY created_at ASC
-                                  """).fetchall()
-            lookup = {k: v for k, v in cur.execute(
-                """ SELECT uuid, first_name FROM user """).fetchall()}
-
-        if not history:
-            self.send(ch, messages.NO_RECORD.format('cash pool'))
-            return
-        elif recent is None:
-            self.send(ch, messages.DISPLAYING().format('history'))
+            self.send(ch, messages.DISPLAYING('history'))
         else:
-            self.send(ch, messages.DISPLAYING().format('recent history'))
+            self.send(ch, messages.DISPLAYING('recent history'))
 
+        lookup = users.UsersDal.read_lookup_table()
         for item in history[recent:]:
             source, targets, value, currency, reason, user = item
             targets = eval(targets)  # pylint: disable=W0123
             if reason == 'REVERT':
                 reason = '[REVERTED BY {}]'.format(lookup[user])
 
-            self.send(ch, '{} -> {}: ${} {} {}'.format(
+            self.send(ch, messages.SHOW_CASH_POOL_HISTORY_ITEM(
                 lookup[source], ' and '.join(lookup[k] for k in targets),
                 value, currency.upper(), reason))
 
-    @Plugin.on_message(r'.*(display|show).*cash pool.*')
+    @plugin.Plugin.on_message(r'.*(display|show).*cash pool.*')
     def show_pool(self, ch, _user, _groups):
-        self.send(ch, "I've analyzed your cash pool.")
-        with contextlib.closing(conn.cursor()) as cur:
-            data = cur.execute(""" SELECT first_name,
-                                          CAST(cad AS FLOAT) / 100,
-                                          CAST(usd AS FLOAT) / 100
-                                   FROM cash_pool
-                                   INNER JOIN user
-                                       ON user.uuid = cash_pool.uuid
-                                   WHERE cad <> 0 OR usd <> 0
-                                   ORDER BY first_name ASC
-                               """).fetchall()
+        self.send(ch, messages.ANALYZED_CASH_POOL())
 
+        data = CashPoolDal.read()
         for first_name, cad, usd in data:
             if cad:
-                self.send(ch, '{} {} ${}{}'.format(
+                self.send(ch, messages.SHOW_CASH_POOL_ITEM(
                     first_name.title(), 'owes' if cad > 0 else 'is owed',
-                    abs(cad), ' CAD' if usd else ''))
+                    abs(cad), 'CAD'))
             if usd:
-                self.send(ch, '{} {} ${} USD'.format(
+                self.send(ch, messages.SHOW_CASH_POOL_ITEM(
                     first_name.title(), 'owes' if usd > 0 else 'is owed',
-                    abs(usd)))
+                    abs(usd), 'USD'))
 
         if not data:
-            self.send(ch, 'All appears to be settled.')
+            self.send(ch, messages.ALL_SETTLED())
 
-    @Plugin.on_message(r'(.*) (\w+) (sent|paid) \$([\d\.]+) ?(|{}) '
-                       r'(to|for) ([, \w]+)\.?'.format(
-                           '|'.join(CURRENCIES).lower()))
+    @plugin.Plugin.on_message(
+        r'(.*) (\w+) (sent|paid) \$([\d\.]+) ?(|{}) '
+        r'(to|for) ([, \w]+)\.?'.format('|'.join(CURRENCIES).lower()))
     def send_cash(self, ch, user, groups):
         reason, single, _direction, value, currency, _, multiple = groups
-        value = int(float(value) * 100)
+        reason = reason[6:] if reason.startswith('jarvis') else reason
+        if not currency:
+            currency = DEFAULT_CURRENCY.lower()
 
-        with contextlib.closing(conn.cursor()) as cur:
-            if single == 'i':
-                s = user
+        single = user if single == 'i' else users.UsersDal.read_by_name(single)
+
+        multiple = helper.language_to_list(multiple)
+        for idx, item in enumerate(multiple):
+            if item == 'me':
+                multiple[idx] = user
+            elif item in ('herself', 'himself'):
+                multiple[idx] = single
             else:
-                s = cur.execute(""" SELECT uuid
-                                    FROM user
-                                    WHERE first_name = ?
-                                """, [single]).fetchone()[0]
+                multiple[idx] = users.UsersDal.read_by_name(item)
 
-            m = filter(lambda u: u != 'and', re.findall(DELIMITED, multiple))
-            for idx, item in enumerate(m):
-                if item == 'me':
-                    m[idx] = user
-                elif item in ('herself', 'himself'):
-                    m[idx] = s
-                else:
-                    m[idx] = cur.execute(""" SELECT uuid
-                                             FROM user
-                                             WHERE first_name = ?
-                                         """, [item]).fetchone()[0]
+        CashPoolDal.update(single, multiple, int(value) * 100., currency)
+        CashPoolHistoryDal.create(single, str(multiple), value, currency,
+                                  reason.strip(' ,.?!'), user)
 
-            if not currency:
-                currency = DEFAULT_CURRENCY.lower()
-
-            cur.execute(""" INSERT OR IGNORE INTO cash_pool (uuid)
-                            VALUES (?)
-                        """, [s])
-            cur.execute(""" UPDATE cash_pool
-                            SET {} = {} - ?
-                            WHERE uuid = ?
-                        """.format(currency, currency), [value, s])
-            m_value = int(round(value / len(m)))
-            for p in m:
-                cur.execute(""" INSERT OR IGNORE INTO cash_pool (uuid)
-                                VALUES (?)
-                            """, [p])
-                cur.execute(""" UPDATE cash_pool
-                                SET {} = {} + ?
-                                WHERE uuid = ?
-                            """.format(currency, currency), [m_value, p])
-
-            reason = reason[7:] if reason.startswith('jarvis') else reason
-            cur.execute(""" INSERT INTO cash_pool_history (source, targets,
-                                                           value, currency,
-                                                           reason, created_by)
-                            VALUES (?, ?, ?, ?, ?, ?)
-                        """, [s, str(m), value / 100., currency,
-                              reason.strip(' ,.?!'), user])
-            conn.commit()
-
-        self.send(ch, 'Very good, sir.')
+        self.send(ch, messages.ACKNOWLEDGE())
 
     @staticmethod
     def revert_user_change(user):
-        with contextlib.closing(conn.cursor()) as cur:
-            last = cur.execute(""" SELECT source, targets, value, currency
-                                   FROM cash_pool_history
-                                   WHERE created_by = ?
-                                   ORDER BY created_at DESC
-                                   LIMIT 1
-                               """, [user]).fetchone()
+        last = CashPoolHistoryDal.read_most_recent_by_user(user)
+        last = get_cash_pool_history_most_recent_from_user(user)
         if not last:
             return False
 
         source, targets, value, currency = last
-        value *= 100.
-        target = eval(targets)  # pylint: disable=W0123
-
-        with contextlib.closing(conn.cursor()) as cur:
-            cur.execute(""" UPDATE cash_pool
-                                SET {} = {} + ?
-                                WHERE uuid = ?
-                            """.format(currency, currency), [value, source])
-
-            for target in targets:
-                m_value = int(round(value / len(targets)))
-                cur.execute(""" UPDATE cash_pool
-                                SET {} = {} - ?
-                                WHERE uuid = ?
-                            """.format(currency, currency), [m_value, target])
-
-            cur.execute(""" INSERT INTO cash_pool_history (source, targets,
-                                                           value, currency,
-                                                           reason, created_by)
-                            VALUES (?, ?, ?, ?, ?, ?)
-                        """, [source, str(targets), value / 100., currency,
-                              'REVERT', user])
-            conn.commit()
+        CashPoolDal.update(source, eval(target), -int(value) * 100., currency)
+        CashPoolHistoryDal.create(source, targets, value, currency, 'REVERT',
+                                  user)
 
         return True
 
-    @Plugin.on_message(r'.*revert my .*cash pool change.*')
+    @plugin.Plugin.on_message(r'.*revert my .*cash pool change.*')
     def revert_own_change(self, ch, user, _groups):
         if not self.revert_user_change(user):
-            self.send(ch, 'I could not find a change to revert.')
+            self.send(ch, NO_REVERTABLE())
             return
 
-        self.send(ch, "Yes, sir; I've cleaned up your tomfoolery.")
+        self.send(ch, messages.CLEANED_UP())
 
-    @Plugin.require_auth
-    @Plugin.on_message(r'.*revert the .*cash pool change.*')
+    @plugin.Plugin.require_auth
+    @plugin.Plugin.on_message(r'.*revert the .*cash pool change.*')
     def revert_any_change(self, ch, _user, _groups):
-        with contextlib.closing(conn.cursor()) as cur:
-            user = cur.execute(""" SELECT created_by
-                                   FROM cash_pool_history
-                                   ORDER BY created_at DESC
-                                   LIMIT 1
-                               """).fetchone()
+        user = CashPoolHistoryDal.read_most_recent_user()
         if not user:
-            self.send(ch, messages.NO_USAGE)
+            self.send(ch, messages.NO_USAGE())
             return
 
         if not self.revert_user_change(user):
-            self.send(ch, messages.NO_REVERTABLE)
+            self.send(ch, messages.NO_REVERTABLE())
             return
 
-        self.send(ch, messages.CLEANED_UP)
+        self.send(ch, messages.CLEANED_UP())
 
-    @Plugin.on_message(r'.*currencies.*support(ed)?.*')
+    @plugin.Plugin.on_message(r'.*currencies.*support(ed)?.*')
     def get_all_currencies(self, ch, _user, _groups):
-        supported = CURRENCIES[:]
-        if len(supported) > 2:
-            for i in range(len(supported) - 1):
-                supported[i] = supported[i] + ','
+        supported = helper.list_to_language(CURRENCIES[:])
+        self.send(ch, messages.SUPPORT(supported))
 
-        supported.insert(-1, 'and')
-        supported = ' '.join(supported)
-
-        self.send(ch, messages.SUPPORT.format(supported))
-
-    @Plugin.on_message(r'.*default.*currency.*')
+    @plugin.Plugin.on_message(r'.*default.*currency.*')
     def get_default_currency(self, ch, _user, _groups):
-        self.send(ch, messages.DEFAULT_CURRENCY.format(DEFAULT_CURRENCY))
+        self.send(ch, messages.DEFAULT_CURRENCY(DEFAULT_CURRENCY))

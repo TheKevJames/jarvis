@@ -7,7 +7,7 @@ import os
 import subprocess
 
 import jarvis.core.messages as messages
-from jarvis.core.plugin import Plugin
+import jarvis.core.plugin as plugin
 
 
 COMPLETED_DIR = os.path.join(os.path.expanduser('~'), 'torrent', 'done')
@@ -15,18 +15,18 @@ ONGOING_DIR = os.path.join(os.path.expanduser('~'), 'torrent', 'incomplete')
 WATCH_DIR = os.path.join(os.path.expanduser('~'), 'torrent', 'watch')
 
 
-class Download(Plugin):
+class Download(plugin.Plugin):
     def __init__(self, slack):
         super(Download, self).__init__(slack, 'download')
 
     def help(self, ch):
         if not os.path.isdir(WATCH_DIR):
-            self.send_now(ch, messages.ERROR_NOT_ENABLED.format('torrent'))
+            self.send_now(ch, messages.ERROR_NOT_ENABLED('torrent'))
             return
 
         self.send_now(ch, __doc__.replace('\n', ' '))
 
-    @Plugin.on_message(r'.*display the (\w+) torrents.*')
+    @plugin.Plugin.on_message(r'.*display the (\w+) torrents.*')
     def display(self, ch, _user, groups):
         status = groups[0]
         if status in ('incomplete', 'ongoing'):
@@ -34,7 +34,7 @@ class Download(Plugin):
         elif status in ('completed', 'finished'):
             target_directory = COMPLETED_DIR
         else:
-            self.send(ch, messages.CONFUSED)
+            self.send(ch, messages.CONFUSED())
             return
 
         files = os.listdir(target_directory)
@@ -46,7 +46,7 @@ class Download(Plugin):
         for torrent in sorted(files):
             self.send(ch, torrent)
 
-    @Plugin.on_message(r'.*torrent (.+)\.?')
+    @plugin.Plugin.on_message(r'.*torrent (.+)\.?')
     def download(self, ch, _user, groups):
         url = groups[0].strip('<>')
 
@@ -55,7 +55,7 @@ class Download(Plugin):
         if 'torrentday' in url[0]:
             cookie = os.environ.get('TORRENTDAY_COOKIE')
             if not cookie:
-                self.send(ch, messages.ERROR_NOT_ENABLED.format('torrent'))
+                self.send(ch, messages.ERROR_NOT_ENABLED('torrent'))
                 return
 
             command.insert(1, '--cookie')
@@ -65,7 +65,7 @@ class Download(Plugin):
                              stderr=subprocess.PIPE)
         code = p.wait()
         if code != 0:
-            self.send(ch, messages.ERROR_ACCESS_URL)
+            self.send(ch, messages.ERROR_ACCESS_URL())
             return
 
-        self.send(ch, messages.WILL_STORE)
+        self.send(ch, messages.WILL_STORE())
