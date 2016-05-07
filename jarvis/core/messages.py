@@ -65,6 +65,7 @@ def NO_AUTHORIZATION():
 You are not authorised to access this area. I am contacting Mr. Stark now.
 """
 
+
 def NO_CHANNEL_FOUND(channel):
     return 'I could not look up channel "{}".'.format(channel)
 
