@@ -24,8 +24,8 @@ setuptools.setup(
     ],
     entry_points={
         'console_scripts': [
+            'jarvis = jarvis.entrypoint:run',
             'jarvis-init = jarvis.entrypoint:init',
-            'jarvis-run = jarvis.entrypoint:run',
             'jarvis-update = jarvis.entrypoint:update'
         ],
     },

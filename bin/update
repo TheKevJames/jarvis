@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -eu
+
+GIT_ROOT=$(git rev-parse --show-toplevel)
+
+(set +e; systemctl stop jarvis)
+
+git fetch
+git reset --hard HEAD
+git checkout $(git describe --abbrev=0 --tags)
+
+/usr/bin/env python setup.py install
+
+jarvis-update
+
+cp $(GIT_ROOT)/extra/consul.json /etc/consul.d/jarvis.json
+(set +e; systemctl restart consul)
+
+cp $(GIT_ROOT)/extra/service.sysd /etc/systemd/system/jarvis.service
+(set +e; systemctl start jarvis)

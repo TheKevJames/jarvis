@@ -24,3 +24,5 @@ deployment:
     tag: /[0-9]+\.[0-9]+\.[0-9]+/
     commands:
       - ./bin/linux/amd64/github-release release --user TheKevJames --repo jarvis --tag $(git tag | tail -n1) --name "Jarvis" --description "$(git log $(git tag | tail -n2 | head -n1)..$(git tag | tail -n1)~1 --pretty=format:'- %s')"
+
+      - ssh root@$SOFTIES_IP /etc/jarvis/bin/update
