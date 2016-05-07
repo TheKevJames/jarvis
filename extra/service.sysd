@@ -1,0 +1,13 @@
+[Unit]
+Description=jarvis daemon
+After=network.target
+
+[Service]
+WorkingDirectory=/etc/jarvis
+ExecStart=jarvis
+PrivateTmp=true
+EnvironmentFile=/etc/jarvis.conf
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

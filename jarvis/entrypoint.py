@@ -23,4 +23,3 @@ def run():
 
 def update():
     Jarvis(TOKEN).update()
-    Jarvis(TOKEN).run()
