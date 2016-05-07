@@ -13,8 +13,8 @@ git checkout $(git describe --abbrev=0 --tags)
 
 jarvis-update
 
-cp $(GIT_ROOT)/extra/consul.json /etc/consul.d/jarvis.json
+cp "${GIT_ROOT}/extra/consul.json" /etc/consul.d/jarvis.json
 (set +e; systemctl restart consul)
 
-cp $(GIT_ROOT)/extra/service.sysd /etc/systemd/system/jarvis.service
+cp "${GIT_ROOT}/extra/service.sysd" /etc/systemd/system/jarvis.service
 (set +e; systemctl start jarvis)
