@@ -38,32 +38,10 @@ CREATE TABLE cash_pool_history (
 );
 """
 import contextlib
-import sqlite3
+
+from jarvis.db import connection
 
 
-conn = sqlite3.connect('jarvis.db')
-
-
-def initialize_database():
-    with contextlib.closing(conn.cursor()) as cur:
+def initialize():
+    with contextlib.closing(connection.cursor()) as cur:
         cur.executescript(__doc__)
-
-
-def get_admin_channels():
-    with contextlib.closing(conn.cursor()) as cur:
-        for user in cur.execute(""" SELECT channel
-                                        FROM user
-                                        WHERE is_admin = 1
-                                    """).fetchall():
-            if user[0]:
-                yield user[0]
-
-
-def is_admin(uuid):
-    with contextlib.closing(conn.cursor()) as cur:
-        admin = cur.execute(""" SELECT is_admin
-                                FROM user
-                                WHERE uuid = ?
-                            """, [uuid]).fetchone()
-
-    return admin[0]

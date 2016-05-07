@@ -3,7 +3,8 @@ I have been configured to help you "ship it" upon command.
 """
 import random
 
-from ..plugin import Plugin
+import jarvis.core.messages as messages
+import jarvis.core.plugin as plugin
 
 
 squirrels = [
@@ -26,14 +27,14 @@ squirrels = [
 ]
 
 
-class ShipIt(Plugin):
+class ShipIt(plugin.Plugin):
     def __init__(self, slack):
         super(ShipIt, self).__init__(slack, 'ship_it')
 
     def help(self, ch):
         self.send_now(ch, __doc__.replace('\n', ' '))
 
-    @Plugin.on_message(r'.*ship(ping)? it.*')
+    @plugin.Plugin.on_message(r'.*ship(ping)? it.*')
     def ship_it(self, ch, _user, _groups):
-        self.send(ch, 'Will do, sir.')
+        self.send(ch, messages.ACKNOWLEDGE())
         self.send(ch, random.choice(squirrels))

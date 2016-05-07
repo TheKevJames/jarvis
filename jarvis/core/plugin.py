@@ -1,9 +1,14 @@
 import collections
+import logging
 import re
 
-from .db import get_admin_channels
-from .db import is_admin
-from .error import SlackError
+import jarvis.core.helper as helper
+import jarvis.core.messages as messages
+import jarvis.db.channels as channels
+import jarvis.db.users as users
+
+
+logger = logging.getLogger(__name__)
 
 
 class PluginMetaclass(type):
@@ -56,24 +61,18 @@ class Plugin(object):
             if not regex_match:
                 continue
 
-            if hasattr(fn, 'auth') and not is_admin(user):
-                self.send(ch, 'You are not authorised to access this area. '
-                              'I am contacting Mr. Stark now.')
+            if hasattr(fn, 'auth') and not users.UsersDal.is_admin(user):
+                self.send(ch, messages.NO_AUTHORIZATION())
 
-                for channel in get_admin_channels:
-                    ch = self.slack.server.channels.find(channel)
-                    if not ch:
-                        raise SlackError(
-                            'Could not look up channel {}'.format(channel))
-
-                    self.send(ch, 'Unauthorized attempt from {}. '
-                                  'Message was: {}'.format(user, msg))
+                for channel in channels.read(admin_only=True):
+                    c = helper.get_channel_or_fail(logger, self.slack, channel)
+                    self.send(c, UNAUTHORIZED_USAGE.format(user, msg))
 
                 continue
 
             fn(self, ch, user, regex_match.groups())
-            for channel, messages in self.buffer.iteritems():
-                self.send_now(channel, '\n'.join(messages))
+            for channel, msgs in self.buffer.iteritems():
+                self.send_now(channel, '\n'.join(msgs))
             self.reset_buffer()
 
             return

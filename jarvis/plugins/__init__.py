@@ -1,9 +1,9 @@
 def get_plugins(slack):
-    from .cash_pool import CashPool
-    from .download import Download
-    from .location import Location
-    from .ship_it import ShipIt
-    from .status import Status
+    from jarvis.plugins.cash_pool import CashPool
+    from jarvis.plugins.download import Download
+    from jarvis.plugins.location import Location
+    from jarvis.plugins.ship_it import ShipIt
+    from jarvis.plugins.status import Status
 
     return [
         CashPool(slack),
