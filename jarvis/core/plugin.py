@@ -18,7 +18,7 @@ class PluginMetaclass(type):
 
     def __new__(mcs, name, bases, namespace, **_kwargs):
         result = type.__new__(mcs, name, bases, dict(namespace))
-        result.response_fns = [fn for fn in namespace.values()
+        result.response_fns = [fn for fn in sorted(namespace.values())
                                if hasattr(fn, 'regex')]
         return result
 
