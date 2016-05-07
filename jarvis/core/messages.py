@@ -86,13 +86,13 @@ def ONLINE():
     return 'J.A.R.V.I.S. online.'
 
 
-def PRINT_WEATHER(greeting, time, loc, temperature, status, sunrise, sunset):
+def PRINT_WEATHER(greeting, time, loc, temperature, status, sunrise_tense,
+                  sunrise, sunset_tense, sunset):
     return """
 {}, sir. It's {}. The weather in {} is {} degrees Celsius and {}. Today's
-sunrise and sunset occur at {} and {}.
-""".format(
-        greeting, time, loc, temperature, status, sunrise, sunset
-    ).replace('\n', ' ')
+sunrise {} at {} and sunset {} at {}.
+""".format(greeting, time, loc, temperature, status, sunrise_tense, sunrise,
+           sunset_tense, sunset).replace('\n', ' ')
 
 
 def SHOW_CASH_POOL_HISTORY_ITEM(source, targets, val, currency, reason):

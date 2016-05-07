@@ -28,6 +28,12 @@ def get_user_fields(slack, user):
     return uuid, first_name, last_name, email, username, is_admin, channel
 
 
+def human_time_to_actual(human):
+    time, period = human.split(' ')
+    hours, minutes = map(int, time.split(':'))
+    return int(hours) + (12 if period.lower() == 'pm' else 0), int(minutes)
+
+
 def language_to_list(items):
     return filter(lambda u: u != 'and', re.findall(DELIMITED, items))
 

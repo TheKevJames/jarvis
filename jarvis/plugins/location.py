@@ -7,6 +7,7 @@ import logging
 import os
 import requests
 
+import jarvis.core.helper as helper
 import jarvis.core.messages as messages
 import jarvis.core.plugin as plugin
 import jarvis.db.dal as dal
@@ -67,7 +68,7 @@ class Location(plugin.Plugin):
         sunrise = astronomy['sunrise'].lstrip('0')
         sunset = astronomy['sunset'].lstrip('0')
 
-        hour = int(time.split(':')[0])
+        hour, minutes = map(int, time.split(':'))
         if 5 <= hour < 12:
             greeting = 'Good morning'
         elif 12 <= hour < 17:
@@ -77,6 +78,16 @@ class Location(plugin.Plugin):
         else:
             greeting = "You're up late"
 
+        sunrise_tense = 'is'
+        rise_hrs, rise_mins = helper.human_time_to_actual(sunrise)
+        if hour > rise_hrs or (hour == rise_hrs and minutes == rise_mins):
+            sunrise_tense = 'was'
+
+        sunset_tense = 'will be'
+        set_hrs, set_mins = helper.human_time_to_actual(sunset)
+        if hour > set_hrs or (hour == set_hrs and minutes == set_mins):
+            sunset_tense = 'was'
+
         self.send(ch, messages.PRINT_WEATHER(
-            greeting, time, city, current['temp_C'],
-            description, sunrise, sunset))
+            greeting, time, city, current['temp_C'], description,
+            sunrise_tense, sunrise, sunset_tense, sunset))
