@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -eu
 
-GIT_ROOT=$(git rev-parse --show-toplevel)
+export GIT_ROOT=$(git rev-parse --show-toplevel)
 
 (set +e; systemctl stop jarvis)
 
