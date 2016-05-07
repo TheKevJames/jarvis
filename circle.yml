@@ -25,4 +25,4 @@ deployment:
     commands:
       - ./bin/linux/amd64/github-release release --user TheKevJames --repo jarvis --tag $(git tag | tail -n1) --name "Jarvis" --description "$(git log $(git tag | tail -n2 | head -n1)..$(git tag | tail -n1)~1 --pretty=format:'- %s')"
 
-      - ssh root@104.236.126.17 /etc/jarvis/bin/update
+      - ssh -t root@104.236.126.17 'cd /etc/jarvis && bin/update'

@@ -16,4 +16,4 @@ cp "${GIT_ROOT}/extra/consul.json" /etc/consul.d/jarvis.json
 
 cp "${GIT_ROOT}/extra/service.sysd" /etc/systemd/system/jarvis.service
 cp "${GIT_ROOT}/extra/service-update.sysd" /etc/systemd/system/jarvis-update.service
-(set +e; systemctl start jarvis-update; systemctl start jarvis)
+(set +e; systemctl daemon-reload; systemctl start jarvis-update; systemctl start jarvis)
