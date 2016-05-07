@@ -163,12 +163,11 @@ class CashPool(plugin.Plugin):
     @staticmethod
     def revert_user_change(user):
         last = CashPoolHistoryDal.read_most_recent_by_user(user)
-        last = get_cash_pool_history_most_recent_from_user(user)
         if not last:
             return False
 
         source, targets, value, currency = last
-        CashPoolDal.update(source, eval(target), -int(value) * 100., currency)
+        CashPoolDal.update(source, eval(targets), -int(value) * 100., currency)
         CashPoolHistoryDal.create(source, targets, value, currency, 'REVERT',
                                   user)
 
