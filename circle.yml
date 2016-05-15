@@ -21,8 +21,8 @@ test:
 
 deployment:
   release:
-    tag: /[0-9]+\.[0-9]+\.[0-9]+/
+    tag: /[0-9]+\.[0-9]+\.[0-9]+/tag
     commands:
-      - ./bin/linux/amd64/github-release release --user TheKevJames --repo jarvis --tag $(git tag | tail -n1) --name "Jarvis" --description "$(git log $(git tag | tail -n2 | head -n1)..$(git tag | tail -n1) --pretty=format:'- %s')"
+      - ./bin/linux/amd64/github-release release --user TheKevJames --repo jarvis --tag $(git tag --sort=version:refname | tail -n1) --name "Jarvis" --description "$(git log $(git tag --sort=version:refname | tail -n2 | head -n1)..$(git tag --sort=version:refname | tail -n1) --pretty=format:'- %s')"
 
       - ssh -t root@104.236.126.17 'cd /etc/jarvis && bin/update'
