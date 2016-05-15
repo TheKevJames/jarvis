@@ -1,6 +1,5 @@
 import logging
 import os
-import sys
 
 from jarvis import Jarvis
 

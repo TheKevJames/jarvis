@@ -26,6 +26,7 @@ DEFAULT_CURRENCY = CURRENCIES[0]
 
 
 class CashPoolDal(dal.Dal):
+    # pylint: disable=E0213
     def read(cur):
         return cur.execute(""" SELECT first_name,
                                       CAST(cad AS FLOAT) / 100,
@@ -54,6 +55,7 @@ class CashPoolDal(dal.Dal):
 
 
 class CashPoolHistoryDal(dal.Dal):
+    # pylint: disable=E0213
     def create(cur, source, targets, value, currency, reason, user):
         cur.execute(""" INSERT INTO cash_pool_history (source, targets,
                                                        value, currency,

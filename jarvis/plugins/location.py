@@ -22,6 +22,7 @@ WEATHER_URL = ('http://api.worldweatheronline.com/free/v2/weather.ashx?q=%s'
 
 
 class LocationDal(dal.Dal):
+    # pylint: disable=E0213
     default_location = 'waterloo'
 
     def read(cur, uuid):

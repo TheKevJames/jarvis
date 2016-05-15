@@ -1,10 +1,10 @@
-import contextlib
 import logging
 import sys
 import time
 
-from setuptools_scm import get_version
 import slackclient
+
+from setuptools_scm import get_version
 
 import jarvis.core.helper as helper
 import jarvis.core.messages as messages
@@ -15,7 +15,7 @@ from jarvis.plugins import get_plugins
 
 
 # MonkeyPatch for slackclient not properly supporting Python 3
-slackclient._channel.Channel.__hash__ = lambda self: hash(self.id)
+slackclient._channel.Channel.__hash__ = lambda self: hash(self.id)  # pylint: disable=W0212
 
 
 logger = logging.getLogger(__name__)
@@ -28,7 +28,7 @@ except LookupError:
 
 
 class Jarvis(object):
-    def __init__(self, token, init=False):
+    def __init__(self, token):
         self.last_ping = 0
         self.plugins = None
 
