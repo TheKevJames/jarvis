@@ -177,7 +177,7 @@ class CashPool(plugin.Plugin):
     @plugin.Plugin.on_message(r'.*revert my .*cash pool change.*')
     def revert_own_change(self, ch, user, _groups):
         if not self.revert_user_change(user):
-            self.send(ch, NO_REVERTABLE())
+            self.send(ch, messages.NO_REVERTABLE())
             return
 
         self.send(ch, messages.CLEANED_UP())
