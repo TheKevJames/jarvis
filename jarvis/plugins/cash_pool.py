@@ -154,7 +154,7 @@ class CashPool(plugin.Plugin):
             else:
                 multiple[idx] = users.UsersDal.read_by_name(item)
 
-        CashPoolDal.update(single, multiple, int(value * 100.), currency)
+        CashPoolDal.update(single, multiple, int(float(value) * 100), currency)
         CashPoolHistoryDal.create(single, str(multiple), value, currency,
                                   reason.strip(' ,.?!'), user)
 
@@ -167,7 +167,8 @@ class CashPool(plugin.Plugin):
             return False
 
         source, targets, value, currency = last
-        CashPoolDal.update(source, eval(targets), -int(value * 100.), currency)
+        CashPoolDal.update(source, eval(targets), -int(float(value) * 100),
+                           currency)
         CashPoolHistoryDal.create(source, targets, value, currency, 'REVERT',
                                   user)
 
