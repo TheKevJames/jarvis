@@ -14,6 +14,10 @@ course, I'll only let you revert your own changes.
 If you're curious as to which "currencies are supported" or what my "default
 currency" is, do let me know.
 """
+import csv
+import os
+import time
+
 import jarvis.db.dal as dal
 import jarvis.db.users as users
 import jarvis.core.helper as helper
@@ -56,6 +60,9 @@ class CashPoolDal(dal.Dal):
 
 class CashPoolHistoryDal(dal.Dal):
     # pylint: disable=E0213
+    columns = ['source', 'targets', 'value', 'currency', 'reason',
+               'created_by']
+
     def create(cur, source, targets, value, currency, reason, user):
         cur.execute(""" INSERT INTO cash_pool_history (source, targets,
                                                        value, currency,
@@ -100,23 +107,49 @@ class CashPool(plugin.Plugin):
             self.send(ch, messages.NO_RECORD('cash pool'))
             return
 
-        recent = -10
-        if any('entire' in g for g in groups):
-            recent = None
+        get_csv = any('csv' in g for g in groups)
+        csv_file = 'cash_pool_output.csv'
+        entire = any('entire' in g for g in groups)
+
+        if get_csv:
+            self.send_now(ch, messages.ACKNOWLEDGE())
+
+            with open(csv_file, 'wb') as f:
+                writer = csv.writer(f)
+                writer.writerow(CashPoolHistoryDal.columns)
+        elif entire:
             self.send(ch, messages.DISPLAYING('history'))
         else:
             self.send(ch, messages.DISPLAYING('recent history'))
 
         lookup = users.UsersDal.read_lookup_table()
+
+        recent = None if entire else -10
         for item in history[recent:]:
             source, targets, value, currency, reason, user = item
             targets = eval(targets)  # pylint: disable=W0123
             if reason == 'REVERT':
                 reason = '[REVERTED BY {}]'.format(lookup[user])
 
+            if get_csv:
+                with open(csv_file, 'ab') as f:
+                    writer = csv.writer(f)
+                    writer.writerow(
+                        [lookup[source], [str(lookup[k]) for k in targets],
+                         value, currency.upper(), reason, lookup[user]])
+                continue
+
             self.send(ch, messages.SHOW_CASH_POOL_HISTORY_ITEM(
                 lookup[source], ' and '.join(lookup[k] for k in targets),
                 value, currency.upper(), reason))
+
+        if get_csv:
+            current_time = time.strftime('%Y-%m-%d %H:%M:%S')
+            self.upload_now(
+                ch, 'Cash Pool History for {}'.format(current_time), csv_file,
+                'csv')
+
+            os.remove(csv_file)
 
     @plugin.Plugin.on_message(r'.*(display|show).*cash pool.*')
     def show_pool(self, ch, _user, _groups):
@@ -169,8 +202,8 @@ class CashPool(plugin.Plugin):
             return False
 
         source, targets, value, currency = last
-        CashPoolDal.update(source, eval(targets), -int(float(value) * 100),
-                           currency)
+        CashPoolDal.update(source, eval(targets),  # pylint: disable=W0123
+                           -int(float(value) * 100), currency)
         CashPoolHistoryDal.create(source, targets, value, currency, 'REVERT',
                                   user)
 
