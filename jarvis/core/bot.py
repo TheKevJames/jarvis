@@ -30,11 +30,14 @@ except LookupError:
 class Jarvis(object):
     def __init__(self, token):
         self.last_ping = 0
+        self.uuid = None
         self.plugins = None
 
         try:
             self.slack = slackclient.SlackClient(token)
             self.slack.rtm_connect()
+
+            self.uuid = self.slack.api_call('auth.test')['user_id']
         except Exception as e:
             logger.error('Could not start JARVIS.')
             logger.exception(e)
@@ -76,19 +79,20 @@ class Jarvis(object):
             plugin.respond(ch=ch, user=user, msg=text)
 
     def input(self, data):
-        kind = data.get('type')
+        user = data.get('user')
+        if user == self.uuid:
+            return
 
+        kind = data.get('type')
         if kind == 'message':
             ch = data.get('channel')
             text = data.get('text', '').lower()
             if channels.ChannelsDal.is_direct(ch) or text.startswith('jarvis'):
-                user = data.get('user')
                 self.handle_message(ch, text, user)
 
             return
 
         if kind in ('team_join', 'user_change'):
-            user = data.get('user')
             user = helper.get_user_fields(self.slack, user)
 
             users.UsersDal.update(*user)
