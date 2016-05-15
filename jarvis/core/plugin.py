@@ -64,9 +64,9 @@ class Plugin(object):
             if hasattr(fn, 'auth') and not users.UsersDal.is_admin(user):
                 self.send(ch, messages.NO_AUTHORIZATION())
 
-                for channel in channels.read(admin_only=True):
+                for channel in channels.ChannelsDal.read(admin_only=True):
                     c = helper.get_channel_or_fail(logger, self.slack, channel)
-                    self.send(c, UNAUTHORIZED_USAGE.format(user, msg))
+                    self.send(c, messages.UNAUTHORIZED_USAGE(user, msg))
 
                 continue
 
