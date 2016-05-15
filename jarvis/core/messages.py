@@ -122,6 +122,10 @@ def UPDATED_LOCATION(loc):
     return ACKNOWLEDGE() + " I've updated your location to {}.".format(loc)
 
 
+def UPDATING():
+    return ACKNOWLEDGE() + ' Commencing automated update.'
+
+
 def WELCOME_HOME():
     return 'Welcome home, sir...'
 
