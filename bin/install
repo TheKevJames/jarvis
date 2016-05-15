@@ -3,7 +3,7 @@ set -eu
 
 export GIT_ROOT=$(git rev-parse --show-toplevel)
 
-/usr/bin/env python setup.py install
+/usr/bin/env python2 setup.py install
 
 cp "${GIT_ROOT}/extra/consul.json" /etc/consul.d/jarvis.json
 (set +e; systemctl daemon-reload; systemctl restart consul)
