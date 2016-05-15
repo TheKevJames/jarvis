@@ -29,4 +29,5 @@ setuptools.setup(
             'jarvis-update = jarvis.entrypoint:update'
         ],
     },
+    data_files=[('changelog', ['jarvis/latest_changes.txt'])]
 )

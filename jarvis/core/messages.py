@@ -1,3 +1,4 @@
+import os
 import random
 
 
@@ -112,10 +113,17 @@ def UNAUTHORIZED_USAGE(user, msg):
 
 
 def UPDATED(version):
+    try:
+        changelog = open(os.path.join(os.path.dirname(__file__), os.pardir,
+                                      os.pardir, 'changelog',
+                                      'latest_changes.txt'), 'r').read()
+    except IOError:
+        changelog = ''
+
     return """
 I have been updated. I am now version {} of the J.A.R.V.I.S. natural language
 interface for Slack.
-""".format(version).replace('\n', ' ')
+""".format(version).replace('\n', ' ') + changelog
 
 
 def UPDATED_LOCATION(loc):
