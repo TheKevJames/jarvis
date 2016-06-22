@@ -115,5 +115,6 @@ class Jarvis(object):
                 self.keepalive()
                 time.sleep(.1)
             except Exception as e:
-                logger.error('Caught unhandled exception, continuing...')
+                logger.error('Caught unhandled exception, exiting...')
                 logger.exception(e)
+                sys.exit(1)
