@@ -1,10 +1,3 @@
 
 
-I am now configured with the following enhancements:
-- I can now create CSV dumps of the cash_pool history for you. Simply ask me to "show the cash pool history as a csv".
-- Administrators may now ask me to "update myself" to the latest release of the J.A.R.V.I.S. core.
-
-Some edge cases where I would do quite well for a stretch and then at the end of the sentence say the wrong cranberry have been fixed, including:
-- I will no longer respond to my own comments.
-- I will no longer malfunction when a user with insufficient privileges attempts as admin-only command.
-- I will auto-update to my latest numerical version, rather than the latest version according to stupid default sort options.
+My previous issues wherein poison sockets would kill me and I'd never come back to life should be fixed with this update!
