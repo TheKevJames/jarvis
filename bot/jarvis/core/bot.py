@@ -4,8 +4,6 @@ import time
 
 import slackclient
 
-from setuptools_scm import get_version
-
 import jarvis.core.helper as helper
 import jarvis.core.messages as messages
 import jarvis.db.channels as channels
@@ -21,10 +19,7 @@ slackclient._channel.Channel.__hash__ = lambda self: hash(self.id)  # pylint: di
 logger = logging.getLogger(__name__)
 
 
-try:
-    __version__ = get_version()
-except LookupError:
-    __version__ = 'XXX-UNCONFIGURED'
+__version__ = '2.0.0'
 
 
 class Jarvis(object):
@@ -56,10 +51,6 @@ class Jarvis(object):
 
             user = helper.get_user_fields(self.slack, user)
             users.UsersDal.create(*user)
-
-    def update(self):
-        ch = helper.get_channel_or_fail(logger, self.slack, 'general')
-        ch.send_message(messages.UPDATED(__version__))
 
     def handle_message(self, channel, text, user):
         ch = helper.get_channel_or_fail(logger, self.slack, channel)

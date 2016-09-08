@@ -1,0 +1,11 @@
+version: '2'
+
+services:
+  bot:
+    build: bot/.
+    environment:
+      - SLACK_TOKEN=${SLACK_TOKEN}
+      - TORRENTDAY_COOKIE=${TORRENTDAY_COOKIE}
+      - WORLD_WEATHER_TOKEN=${WORLD_WEATHER_TOKEN}
+    volumes:
+      - ./db:/db

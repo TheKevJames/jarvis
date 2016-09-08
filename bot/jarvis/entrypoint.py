@@ -4,7 +4,7 @@ import os
 from jarvis import Jarvis
 
 
-TOKEN = os.environ.get('SLACK_TOKEN', 'no-token')
+TOKEN = os.environ['SLACK_TOKEN']
 
 
 logging.basicConfig(level=logging.DEBUG,
@@ -18,7 +18,3 @@ def init():
 
 def run():
     Jarvis(TOKEN).run()
-
-
-def update():
-    Jarvis(TOKEN).update()

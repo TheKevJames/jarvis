@@ -1,28 +1,28 @@
+machine:
+  pre:
+    - curl -sSL https://s3.amazonaws.com/circle-downloads/install-circleci-docker.sh | bash -s -- 1.10.0
+    - pip install --upgrade docker-compose
+
+  services:
+    - docker
+
 dependencies:
   override:
-    - curl -L https://github.com/aktau/github-release/releases/download/v0.6.2/linux-amd64-github-release.tar.bz2 > github-release.tar.bz2
-    - tar xjf github-release.tar.bz2
-    - rm -f github-release.tar.bz2
-
-    - pip install -r requirements.txt
-    - pip install -r requirements-dev.txt
-    - pip install coveralls
-
-    - python setup.py install
+    - docker-compose build
+    - docker-compose pull
 
 test:
   override:
-    - python setup.py test
-  post:
-    - mv htmlcov $CIRCLE_ARTIFACTS/coverage
-    - mv .junitxml $CIRCLE_TEST_REPORTS/junit.xml
-    - coveralls
-    - git fetch --tags
+    - docker-compose run bot init
+
+    - docker-compose up -d
 
 deployment:
   release:
     tag: /[0-9]+\.[0-9]+\.[0-9]+/tag
     commands:
-      - ./bin/linux/amd64/github-release release --user TheKevJames --repo jarvis --tag $(git tag --sort=version:refname | tail -n1) --name "Jarvis" --description "$(git log $(git tag --sort=version:refname | tail -n2 | head -n1)..$(git tag --sort=version:refname | tail -n1) --pretty=format:'- %s')"
+      - curl -L https://github.com/aktau/github-release/releases/download/v0.6.2/linux-amd64-github-release.tar.bz2 > github-release.tar.bz2
+      - tar xjf github-release.tar.bz2
+      - rm -f github-release.tar.bz2
 
-      - ssh -t root@104.236.126.17 'cd /etc/jarvis && bin/update'
+      - ./bin/linux/amd64/github-release release --user TheKevJames --repo jarvis --tag $(git tag --sort=version:refname | tail -n1) --name "Jarvis" --description "$(git log $(git tag --sort=version:refname | tail -n2 | head -n1)..$(git tag --sort=version:refname | tail -n1) --pretty=format:'- %s')"

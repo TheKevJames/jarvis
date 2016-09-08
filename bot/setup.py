@@ -4,7 +4,7 @@ import setuptools
 
 setuptools.setup(
     name='jarvis',
-    use_scm_version=True,
+    version='2.0.0',
     description='A python slackbot',
     keywords='jarvis slack slackbot',
     author='Kevin James',
@@ -12,9 +12,7 @@ setuptools.setup(
     url='https://github.com/TheKevJames/jarvis.git',
     license='MIT License',
     packages=setuptools.find_packages(),
-    install_requires=['requests', 'setuptools_scm', 'slackclient'],
-    setup_requires=['pytest-runner', 'setuptools_scm'],
-    tests_require=['pytest', 'pytest-cov', 'pytest-pep8'],
+    install_requires=['requests', 'slackclient'],
     classifiers=[
         'Programming Language :: Python',
         'Development Status :: 5 - Production/Stable',
@@ -25,9 +23,7 @@ setuptools.setup(
     entry_points={
         'console_scripts': [
             'jarvis = jarvis.entrypoint:run',
-            'jarvis-init = jarvis.entrypoint:init',
-            'jarvis-update = jarvis.entrypoint:update'
+            'init = jarvis.entrypoint:init',
         ],
     },
-    data_files=[('changelog', ['jarvis/latest_changes.txt'])]
 )

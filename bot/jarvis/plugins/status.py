@@ -1,10 +1,8 @@
 """
 This module allows you to interact with my status; do stop in and say "hello"!
-Admins can also tell me to "shut down" for repairs or to "update yourself".
+Admins can also tell me to "shut down" for repairs.
 """
 import logging
-import os
-import subprocess
 import sys
 
 import jarvis.core.helper as helper
@@ -32,17 +30,6 @@ class Status(plugin.Plugin):
     def die(self, ch, _user, _groups):
         self.send_now(ch, messages.ACKNOWLEDGE())
         sys.exit(0)
-
-    @plugin.Plugin.require_auth
-    @plugin.Plugin.on_message(r'.*update yourself.*')
-    def update(self, ch, _user, _groups):
-        if not os.path.isdir('/etc/jarvis'):
-            self.send_now(ch, messages.ERROR_NOT_ENABLED('auto-update'))
-            return
-
-        self.send_now(ch, messages.UPDATING())
-        subprocess.Popen(['/usr/bin/env', 'bash', '/etc/jarvis/bin/update'],
-                         cwd='/etc/jarvis')
 
     @plugin.Plugin.on_message(r".*i'm (back|home).*")
     def home(self, ch, _user, _group):
