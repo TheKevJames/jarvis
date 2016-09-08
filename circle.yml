@@ -16,6 +16,9 @@ test:
     - docker-compose run bot init
 
     - docker-compose up -d
+    - sleep 5
+  post:
+    - docker-compose down
 
 deployment:
   release:
