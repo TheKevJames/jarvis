@@ -70,24 +70,32 @@ class Jarvis(object):
             plugin.respond(ch=ch, user=user, msg=text)
 
     def input(self, data):
-        user = data.get('user')
-        if user == self.uuid:
-            return
+        try:
+            user = data.get('user')
+            if user == self.uuid:
+                return
 
-        kind = data.get('type')
-        if kind == 'message':
-            ch = data.get('channel')
-            text = data.get('text', '').lower()
-            if channels.ChannelsDal.is_direct(ch) or text.startswith('jarvis'):
-                self.handle_message(ch, text, user)
+            kind = data.get('type')
+            if kind == 'message':
+                ch = data.get('channel')
+                text = data.get('text', '').lower()
 
-            return
 
-        if kind in ('team_join', 'user_change'):
-            user = helper.get_user_fields(self.slack, user)
+                direct = channels.ChannelsDal.is_direct(ch)
+                mention = text.startswith('jarvis')
+                if direct or mention:
+                    self.handle_message(ch, text, user)
 
-            users.UsersDal.update(*user)
-            return
+                return
+
+            if kind in ('team_join', 'user_change'):
+                user = helper.get_user_fields(self.slack, user)
+
+                users.UsersDal.update(*user)
+                return
+        except Exception:
+            logger.error('Error handling message {}'.format(str(data)))
+            raise
 
     def keepalive(self):
         now = int(time.time())
