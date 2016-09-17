@@ -95,8 +95,10 @@ sunrise {} at {} and sunset {} at {}.
            sunset_tense, sunset).replace('\n', ' ')
 
 
-def SHOW_CASH_POOL_HISTORY_ITEM(source, targets, val, currency, reason):
-    return '{} -> {}: ${} {} {}'.format(source, targets, val, currency, reason)
+def SHOW_CASH_POOL_HISTORY_ITEM(source, targets, val, currency, reason, user,
+                                date):
+    return '{} -> {}: ${} {} {}, added by {} on {}'.format(
+        source, targets, val, currency, reason, user, date)
 
 
 def SHOW_CASH_POOL_ITEM(user, description, value, currency):

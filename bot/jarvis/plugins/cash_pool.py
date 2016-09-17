@@ -72,7 +72,7 @@ class CashPoolHistoryDal(dal.Dal):
 
     def read(cur):
         return cur.execute(""" SELECT source, targets, value, currency,
-                                      reason, created_by
+                                      reason, created_by, created_at
                                FROM cash_pool_history
                                ORDER BY created_at ASC
                            """).fetchall()
@@ -126,7 +126,7 @@ class CashPool(plugin.Plugin):
 
         recent = None if entire else -10
         for item in history[recent:]:
-            source, targets, value, currency, reason, user = item
+            source, targets, value, currency, reason, user, date = item
             targets = eval(targets)  # pylint: disable=W0123
             if reason == 'REVERT':
                 reason = '[REVERTED BY {}]'.format(lookup[user])
@@ -136,12 +136,12 @@ class CashPool(plugin.Plugin):
                     writer = csv.writer(f)
                     writer.writerow(
                         [lookup[source], [str(lookup[k]) for k in targets],
-                         value, currency.upper(), reason, lookup[user]])
+                         value, currency.upper(), reason, lookup[user], date])
                 continue
 
             self.send(ch, messages.SHOW_CASH_POOL_HISTORY_ITEM(
                 lookup[source], ' and '.join(lookup[k] for k in targets),
-                value, currency.upper(), reason))
+                value, currency.upper(), reason, lookup[user], date))
 
         if get_csv:
             current_time = time.strftime('%Y-%m-%d %H:%M:%S')
