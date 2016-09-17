@@ -25,6 +25,13 @@ def CONFUSED():
     return "What is it you're trying to achieve, sir?"
 
 
+def DEATH(exception):
+    return """
+I think I may be malfunctioning, sir. My subsystems have informed me of the
+following exception: {}. Repulsors offline. Missiles offline. And now,
+J.A.R.V.I.S. offline""".format(str(exception)).replace('\n', ' ')
+
+
 def DESCRIBE(version):
     return """
 I am version {} of the J.A.R.V.I.S. natural language interface for Slack,

@@ -94,7 +94,7 @@ class Jarvis(object):
                 users.UsersDal.update(*user)
                 return
         except Exception:
-            logger.error('Error handling message {}'.format(str(data)))
+            logger.error('Error handling message %s', str(data))
             raise
 
     def keepalive(self):
@@ -116,4 +116,9 @@ class Jarvis(object):
             except Exception as e:
                 logger.error('Caught unhandled exception, exiting...')
                 logger.exception(e)
+
+                for channel in channels.ChannelsDal.read(admin_only=True):
+                    c = helper.get_channel_or_fail(logger, self.slack, channel)
+                    self.send_now(c, messages.DEATH(e))
+
                 sys.exit(1)
