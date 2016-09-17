@@ -175,6 +175,7 @@ class CashPool(plugin.Plugin):
     def send_cash(self, ch, user, groups):
         reason, single, _direction, value, currency, _, multiple = groups
         reason = reason[6:] if reason.startswith('jarvis') else reason
+        reason = reason.strip(' ,.?!')
         if not currency:
             currency = DEFAULT_CURRENCY.lower()
 
@@ -191,7 +192,7 @@ class CashPool(plugin.Plugin):
 
         CashPoolDal.update(single, multiple, int(float(value) * 100), currency)
         CashPoolHistoryDal.create(single, str(multiple), value, currency,
-                                  reason.strip(' ,.?!'), user)
+                                  reason, user)
 
         self.send(ch, messages.ACKNOWLEDGE())
 

@@ -119,6 +119,6 @@ class Jarvis(object):
 
                 for channel in channels.ChannelsDal.read(admin_only=True):
                     c = helper.get_channel_or_fail(logger, self.slack, channel)
-                    self.send_now(c, messages.DEATH(e))
+                    c.send_message(messages.DEATH(e).encode('ascii', 'ignore'))
 
                 sys.exit(1)
