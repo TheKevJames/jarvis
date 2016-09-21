@@ -3,6 +3,8 @@ import sys
 import time
 
 import slackclient
+# https://github.com/slackhq/python-slackclient/issues/118
+from websocket import WebSocketConnectionClosedException
 
 import jarvis.core.helper as helper
 import jarvis.core.messages as messages
@@ -113,6 +115,11 @@ class Jarvis(object):
 
                 self.keepalive()
                 time.sleep(.1)
+            except WebSocketConnectionClosedException as e:
+                logger.error('Caught websocket disconnect, reconnecting...')
+                logger.exception(e)
+
+                self.slack.rtm_connect()
             except Exception as e:
                 logger.error('Caught unhandled exception, exiting...')
                 logger.exception(e)
