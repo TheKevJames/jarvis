@@ -89,6 +89,10 @@ def NO_REVERTABLE():
     return 'I could not find a change to revert.'
 
 
+def NO_USER(username):
+    return 'User trace incomplete. Could not find "{}".'.format(username)
+
+
 def ONLINE():
     return 'J.A.R.V.I.S. online.'
 

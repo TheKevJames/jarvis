@@ -179,7 +179,14 @@ class CashPool(plugin.Plugin):
         if not currency:
             currency = DEFAULT_CURRENCY.lower()
 
-        single = user if single == 'i' else users.UsersDal.read_by_name(single)
+        if single == 'i':
+            single = user
+        else:
+            try:
+                single = users.UsersDal.read_by_name(single)
+            except TypeError:
+                self.send_now(ch, messages.NO_USER(single))
+                return
 
         multiple = helper.language_to_list(multiple)
         for idx, item in enumerate(multiple):
@@ -188,7 +195,11 @@ class CashPool(plugin.Plugin):
             elif item in ('herself', 'himself'):
                 multiple[idx] = single
             else:
-                multiple[idx] = users.UsersDal.read_by_name(item)
+                try:
+                    multiple[idx] = users.UsersDal.read_by_name(item)
+                except TypeError:
+                    self.send_now(ch, messages.NO_USER(item))
+                    return
 
         CashPoolDal.update(single, multiple, int(float(value) * 100), currency)
         CashPoolHistoryDal.create(single, str(multiple), value, currency,
