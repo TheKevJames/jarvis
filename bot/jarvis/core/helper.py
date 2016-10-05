@@ -18,9 +18,9 @@ def get_channel_or_fail(logger, slack, channel):
 
 def get_user_fields(slack, user):
     uuid = user['id']
-    first_name = user['profile']['first_name'].lower()
-    last_name = user['profile']['last_name'].lower()
-    email = user['profile']['email']
+    first_name = user['profile'].get('first_name', '').lower()
+    last_name = user['profile'].get('last_name', '').lower()
+    email = user['profile'].get('email', '')
     username = user['name']
     is_admin = int(user['is_admin'])
 
