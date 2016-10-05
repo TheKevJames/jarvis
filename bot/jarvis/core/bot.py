@@ -54,6 +54,9 @@ class Jarvis(object):
             user = helper.get_user_fields(self.slack, user)
             users.UsersDal.create(*user)
 
+            c = helper.get_channel_or_fail(logger, self.slack, user[-1])
+            c.send_message(messages.GREET_USER(user).encode('ascii', 'ignore'))
+
     def handle_message(self, channel, text, user):
         ch = helper.get_channel_or_fail(logger, self.slack, channel)
 

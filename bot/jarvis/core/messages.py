@@ -67,6 +67,14 @@ def GREET():
         'At your service, sir.', 'Hello, I am Jarvis.', 'Oh hello, sir!'))
 
 
+def GREET_USER(user):
+    return """
+Greetings, {}! My name is J.A.R.V.I.S., a natural language interface for Slack.
+Your user profile has indeed been uploaded, sir; we're online and ready. If you
+have any questions about my functions, please ask me for help.
+""".format(user[1]).replace('\n', ' ')
+
+
 def NO_AUTHORIZATION():
     return """
 You are not authorised to access this area. I am contacting Mr. Stark now.
