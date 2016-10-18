@@ -26,9 +26,9 @@ class UsersDal(dal.Dal):
 
     def update(cur, uuid, first_name, last_name, email, username, is_admin,
                channel):
-        cur.execute(""" INSERT INTO user
-                            (uuid, first_name, last_name, email, username,
-                             is_admin, channel)
-                        VALUES (?, ?, ?, ?, ?, ?, ?) """,
-                    [uuid, first_name, last_name, email, username, is_admin,
-                     channel])
+        cur.execute(""" UPDATE user
+                        SET first_name = ?, last_name = ?, email = ?,
+                            username = ?, is_admin = ?, channel = ?
+                        WHERE uuid = ? """,
+                    [first_name, last_name, email, username, is_admin,
+                     channel, uuid])
