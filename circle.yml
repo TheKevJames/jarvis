@@ -9,7 +9,6 @@ machine:
 dependencies:
   override:
     - docker-compose build
-    - docker-compose pull
 
 test:
   override:
