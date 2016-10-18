@@ -3,6 +3,7 @@ version: '2'
 services:
   bot:
     build: bot/.
+    image: thekevjames/jarvis
     environment:
       - SLACK_TOKEN=${SLACK_TOKEN}
       - TORRENTDAY_COOKIE=${TORRENTDAY_COOKIE}
