@@ -15,13 +15,13 @@ test:
     - docker-compose run bot init
 
     - docker-compose up -d
-    - sleep 5
+    - sleep 3
   post:
     - docker-compose down
 
 deployment:
   release:
-    tag: /[0-9]+\.[0-9]+\.[0-9]+/tag
+    tag: /[0-9]+\.[0-9]+\.[0-9]+/
     owner: TheKevJames
     commands:
       - curl -L https://github.com/aktau/github-release/releases/download/v0.6.2/linux-amd64-github-release.tar.bz2 > github-release.tar.bz2
