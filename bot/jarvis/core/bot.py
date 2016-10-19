@@ -21,7 +21,7 @@ slackclient._channel.Channel.__hash__ = lambda self: hash(self.id)  # pylint: di
 logger = logging.getLogger(__name__)
 
 
-__version__ = '2.0.1'
+__version__ = '2.1.0'
 
 
 class Jarvis(object):
