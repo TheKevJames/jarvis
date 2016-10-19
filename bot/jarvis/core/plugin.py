@@ -83,7 +83,7 @@ class Plugin(object):
                 self.send_now(channel, '\n'.join(msgs))
             self.reset_buffer()
 
-            return
+            return True
 
     def help(self, ch):
         raise NotImplementedError

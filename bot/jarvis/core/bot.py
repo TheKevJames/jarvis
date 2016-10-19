@@ -71,8 +71,12 @@ class Jarvis(object):
                 ch.send_message('\n'.join(message))
             return
 
+        responded = False
         for plugin in self.plugins:
-            plugin.respond(ch=ch, user=user, msg=text)
+            responded ^= bool(plugin.respond(ch=ch, user=user, msg=text))
+
+        if not responded:
+            ch.send_message(messages.CONFUSED)
 
     def input(self, data):
         try:
