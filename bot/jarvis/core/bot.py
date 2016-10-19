@@ -76,7 +76,7 @@ class Jarvis(object):
             responded ^= bool(plugin.respond(ch=ch, user=user, msg=text))
 
         if not responded:
-            ch.send_message(messages.CONFUSED)
+            ch.send_message(messages.CONFUSED().encode('ascii', 'ignore'))
 
     def input(self, data):
         try:
