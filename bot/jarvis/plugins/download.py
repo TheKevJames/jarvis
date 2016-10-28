@@ -10,9 +10,9 @@ import jarvis.core.messages as messages
 import jarvis.core.plugin as plugin
 
 
-COMPLETED_DIR = os.path.join(os.path.expanduser('~'), 'torrent', 'done')
-ONGOING_DIR = os.path.join(os.path.expanduser('~'), 'torrent', 'incomplete')
-WATCH_DIR = os.path.join(os.path.expanduser('~'), 'torrent', 'watch')
+COMPLETED_DIR = os.path.join(os.path.abspath(os.sep), 'torrent', 'done')
+ONGOING_DIR = os.path.join(os.path.abspath(os.sep), 'torrent', 'incomplete')
+WATCH_DIR = os.path.join(os.path.abspath(os.sep), 'torrent', 'watch')
 
 
 class Download(plugin.Plugin):
