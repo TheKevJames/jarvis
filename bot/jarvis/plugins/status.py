@@ -26,15 +26,15 @@ class Status(plugin.Plugin):
         self.send_now(ch, __doc__.replace('\n', ' '))
 
     @plugin.Plugin.require_auth
-    @plugin.Plugin.on_message(r'.*(power|shut) (off|down).*')
+    @plugin.Plugin.on_words({'shut down'})
     def die(self, ch, _user, _groups):
         self.send_now(ch, messages.ACKNOWLEDGE())
         sys.exit(0)
 
-    @plugin.Plugin.on_message(r".*i'm (back|home).*")
+    @plugin.Plugin.on_regex(r".*i'm (back|home).*")
     def home(self, ch, _user, _group):
         self.send(ch, messages.WELCOME_HOME())
 
-    @plugin.Plugin.on_message(r".*hello|(you (there|up)).*")
+    @plugin.Plugin.on_regex(r".*hello|(you (there|up)).*")
     def you_there(self, ch, _user, _groups):
         self.send(ch, messages.GREET())

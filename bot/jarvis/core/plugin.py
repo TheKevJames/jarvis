@@ -19,7 +19,7 @@ class PluginMetaclass(type):
     def __new__(mcs, name, bases, namespace, **_kwargs):
         result = type.__new__(mcs, name, bases, dict(namespace))
         result.response_fns = [fn for fn in sorted(namespace.values())
-                               if hasattr(fn, 'regex')]
+                               if hasattr(fn, 'regex') or hasattr(fn, 'words')]
         return result
 
 
@@ -37,11 +37,40 @@ class Plugin(object):
         self.buffer = collections.defaultdict(list)
 
     @staticmethod
-    def on_message(msg):
-        def on_message_decorator(func):
+    def check_regex(func, msg):
+        try:
+            regex_match = func.regex.match(msg)
+            return regex_match.groups()
+        except AttributeError:
+            return False
+
+    @staticmethod
+    def check_words(func, msg):
+        try:
+            if isinstance(func.words, set):
+                if not all(word in msg for word in func.words):
+                    return False
+            else:
+                for word in func.words:
+                    msg = msg[msg.index(word) + len(word):]
+        except (AttributeError, ValueError):
+            return False
+
+        return ['ok']
+
+    @staticmethod
+    def on_regex(msg):
+        def on_regex_decorator(func):
             func.regex = re.compile(msg)
             return func
-        return on_message_decorator
+        return on_regex_decorator
+
+    @staticmethod
+    def on_words(msg):
+        def on_words_decorator(func):
+            func.words = msg
+            return func
+        return on_words_decorator
 
     @staticmethod
     def require_auth(func):
@@ -65,8 +94,8 @@ class Plugin(object):
 
     def respond(self, ch, user, msg):
         for fn in self.response_fns:
-            regex_match = fn.regex.match(msg)
-            if not regex_match:
+            groups = self.check_words(fn, msg) or self.check_regex(fn, msg)
+            if not groups:
                 continue
 
             if hasattr(fn, 'auth') and not users.UsersDal.is_admin(user):
@@ -78,7 +107,7 @@ class Plugin(object):
 
                 continue
 
-            fn(self, ch, user, regex_match.groups())
+            fn(self, ch, user, groups)
             for channel, msgs in self.buffer.iteritems():
                 self.send_now(channel, '\n'.join(msgs))
             self.reset_buffer()

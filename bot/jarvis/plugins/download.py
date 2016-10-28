@@ -1,7 +1,7 @@
 """
 You can ask me to "torrent <url>" if you would like to start a new download.
 Asking me to "display the <status> torrents", where status is either
-'ongoing' or 'completed', will show a list of the appropriate torrents.
+'incomplete' or 'completed', will show a list of the appropriate torrents.
 """
 import os
 import subprocess
@@ -26,27 +26,29 @@ class Download(plugin.Plugin):
 
         self.send_now(ch, __doc__.replace('\n', ' '))
 
-    @plugin.Plugin.on_message(r'.*display the (\w+) torrents.*')
-    def display(self, ch, _user, groups):
-        status = groups[0]
-        if status in ('incomplete', 'ongoing'):
-            target_directory = ONGOING_DIR
-        elif status in ('completed', 'finished'):
-            target_directory = COMPLETED_DIR
-        else:
-            self.send(ch, messages.CONFUSED())
-            return
-
-        files = os.listdir(target_directory)
+    @plugin.Plugin.on_words({'display', 'incomplete', 'torrents'})
+    def display_incomplete(self, ch, _user, _groups):
+        files = os.listdir(ONGOING_DIR)
         if not files:
-            self.send(ch, 'Sir, no torrents are {}.'.format(status[0]))
+            self.send(ch, 'Sir, no torrents are incomplete.')
             return
 
         self.send(ch, messages.ACKNOWLEDGE())
         for torrent in sorted(files):
             self.send(ch, torrent)
 
-    @plugin.Plugin.on_message(r'.*torrent (.+)\.?')
+    @plugin.Plugin.on_words({'display', 'torrents'})
+    def display(self, ch, _user, _groups):
+        files = os.listdir(COMPLETED_DIR)
+        if not files:
+            self.send(ch, 'Sir, no torrents have finished downloading.')
+            return
+
+        self.send(ch, messages.ACKNOWLEDGE())
+        for torrent in sorted(files):
+            self.send(ch, torrent)
+
+    @plugin.Plugin.on_regex(r'.*torrent (.+)\.?')
     def download(self, ch, _user, groups):
         url = groups[0].strip('<>')
 

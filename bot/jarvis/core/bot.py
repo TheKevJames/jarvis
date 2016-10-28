@@ -76,11 +76,15 @@ class Jarvis(object):
             responded ^= bool(plugin.respond(ch=ch, user=user, msg=text))
 
         if not responded:
+            logger.warning('Could not understand message "%s".', text)
             ch.send_message(messages.CONFUSED().encode('ascii', 'ignore'))
 
     def input(self, data):
         try:
-            user = data.get('user')
+            if data.get('username') == 'slackbot':
+                return
+
+            user = data.get('user') or data.get('message', {}).get('user')
             if user == self.uuid:
                 return
 
@@ -88,7 +92,6 @@ class Jarvis(object):
             if kind == 'message':
                 ch = data.get('channel')
                 text = data.get('text', '').lower()
-
 
                 direct = channels.ChannelsDal.is_direct(ch)
                 mention = text.startswith('jarvis')

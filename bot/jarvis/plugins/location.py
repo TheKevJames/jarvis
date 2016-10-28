@@ -42,12 +42,12 @@ class Location(plugin.Plugin):
     def help(self, ch):
         self.send_now(ch, __doc__.replace('\n', ' '))
 
-    @plugin.Plugin.on_message(r".*i'm in (.*)\.?")
+    @plugin.Plugin.on_regex(r".*i'm in (.*)\.?")
     def change_location(self, ch, user, groups):
         LocationDal.update(user, groups[0])
         self.send(ch, messages.UPDATED_LOCATION(groups[0]))
 
-    @plugin.Plugin.on_message(r".*how's the weather.*")
+    @plugin.Plugin.on_words({'weather'})
     def get_weather(self, ch, user, _groups):
         token = os.environ.get('WORLD_WEATHER_TOKEN')
         if not token:
