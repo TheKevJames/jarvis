@@ -1,0 +1,14 @@
+[run]
+branch = True
+omit =
+    setup.py
+    tests/*
+
+[html]
+directory = htmlcov
+
+[report]
+exclude_lines =
+    pragma: no cover
+    if __name__ == .__main__.:
+    def main\(\):

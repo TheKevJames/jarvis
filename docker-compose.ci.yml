@@ -1,0 +1,6 @@
+version: '2'
+
+services:
+  bot:
+    volumes:
+      - ${CIRCLE_ARTIFACTS}/coverage:/src/htmlcov

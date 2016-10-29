@@ -11,7 +11,7 @@ setuptools.setup(
     author_email='KevinJames@thekev.in',
     url='https://github.com/TheKevJames/jarvis.git',
     license='MIT License',
-    packages=setuptools.find_packages(),
+    packages=setuptools.find_packages(exclude=['tests']),
     install_requires=['requests', 'slackclient'],
     classifiers=[
         'Programming Language :: Python',
