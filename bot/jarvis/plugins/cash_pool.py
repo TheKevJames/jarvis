@@ -8,14 +8,21 @@ Alternatively, you may inform me that "Tom sent $42 to Dick" or that "Tom paid
 $333 for Tom, Dick, and Harry". When away from home, do be more specific: when
 in America, you should inform me that "Tom sent $42 USD to Dick."
 
+I should also be able to understand more complex information, such as in the
+case where bill is split inequally or multiple people pay for portions of the
+bill. Maybe "Tom paid $20 USD and Dick paid $80 CAD for Tom, Dick, and Harry."
+or "Tom paid $40 for Dick and Tom paid $120 for Tom and Harry."
+
 You can ask me to "revert my last cash pool change" if you make a mistake. Of
-course, I'll only let you revert your own changes.
+course, I'll only let you revert your own changes. Only administrators can
+revert other people's changes.
 
 If you're curious as to which "currencies are supported" or what my "default
 currency" is, do let me know.
 """
 import csv
 import os
+import re
 import time
 
 import jarvis.db.dal as dal
@@ -27,6 +34,11 @@ import jarvis.core.plugin as plugin
 
 CURRENCIES = ['CAD', 'USD']
 DEFAULT_CURRENCY = CURRENCIES[0]
+
+REGEX_CURRENCY = r'\$([\d\.]+) ?(|{})'.format('|'.join(CURRENCIES).lower())
+REGEX_PAID_ONE = re.compile(
+    r'(\w+) paid {} for ([ \w]+)'.format(REGEX_CURRENCY))
+REGEX_SENT_ONE = re.compile(r'(\w+) sent {} to (\w+)'.format(REGEX_CURRENCY))
 
 
 class CashPoolDal(dal.Dal):
@@ -93,6 +105,128 @@ class CashPoolHistoryDal(dal.Dal):
                            """).fetchone()
 
 
+class CashPoolHelper(object):
+    @staticmethod
+    def do_transactions(send, ch, user, reason, transactions, regex):
+        for tx in transactions:
+            sender, value, curr, receiver = regex.match(tx).groups()
+            curr = curr or DEFAULT_CURRENCY.lower()
+            receivers = receiver.split(' ')
+
+            sender = CashPoolHelper.get_real_sender(send, ch, user, sender)
+            if not sender:
+                return
+
+            for i, recv in enumerate(receivers):
+                receivers[i] = CashPoolHelper.get_real_receiver(
+                    send, ch, user, sender, recv)
+                if not receivers[i]:
+                    return
+
+            CashPoolDal.update(sender, receivers, int(float(value)*100), curr)
+            CashPoolHistoryDal.create(sender, str(receivers), value, curr,
+                                      reason, user)
+
+            send(ch, messages.ACKNOWLEDGE())
+
+    @staticmethod
+    def extract_reason(message, word):
+        if not message.startswith('for'):
+            return message, ''
+
+        split = message.split(' ')
+        reason = ' '.join(split[:split.index(word) - 1])
+        return message.replace(reason, '').strip(), reason
+
+    @staticmethod
+    def fixup_receivers(send, ch, chunks, word):
+        # ensure parseable receivers
+        receiver_count = len([c for c in chunks if word in c.split(' ')])
+        if receiver_count not in (1, len(chunks)):
+            send(ch, messages.CONFUSED())
+            return list()
+
+        # ensure all chunks have receiver info
+        if receiver_count == 1:
+            if word not in chunks[-1].split(' '):
+                send(ch, messages.CONFUSED())
+                return list()
+
+            receiver = chunks[-1][chunks[-1].index(word)-1:]
+            for i, _ in enumerate(chunks[:-1]):
+                chunks[i] += receiver
+
+        return chunks
+
+    @staticmethod
+    def get_real_receiver(send, ch, user, sender, receiver):
+        try:
+            return users.UsersDal.read_by_name(receiver)
+        except TypeError:
+            if receiver not in ('me', 'himself', 'herself'):
+                send(ch, messages.NO_USER(receiver))
+                return
+
+            if receiver == 'me':
+                return user
+            if receiver in ('himself', 'herself'):
+                return sender
+
+    @staticmethod
+    def get_real_sender(send, ch, user, sender):
+        try:
+            return users.UsersDal.read_by_name(sender)
+        except TypeError:
+            if sender != 'i':
+                send(ch, messages.NO_USER(sender))
+                return
+
+            return user
+
+    @staticmethod
+    def merge_nameonly_chunks(chunks, words):
+        for i in range(len(chunks) - 1, -1, -1):
+            if words[0] not in chunks[i] and words[1] not in chunks[i]:
+                chunks[i-1] += ' ' + chunks[i]
+                del chunks[i]
+
+        return chunks
+
+    @staticmethod
+    def print_history(send, ch, message, limit=0):
+        history = CashPoolHistoryDal.read()
+        if not history:
+            send(ch, messages.NO_RECORD('cash pool'))
+            return
+
+        send(ch, messages.DISPLAYING(message))
+
+        lookup = users.UsersDal.read_lookup_table()
+        for item in history[-limit:]:
+            source, targets, value, currency, reason, user, date = item
+            targets = eval(targets)  # pylint: disable=W0123
+            if reason == 'REVERT':
+                reason = '[REVERTED BY {}]'.format(lookup[user])
+
+            send(ch, messages.SHOW_CASH_POOL_HISTORY_ITEM(
+                lookup[source], ' and '.join(lookup[k] for k in targets),
+                value, currency.upper(), reason, lookup[user], date))
+
+    @staticmethod
+    def revert_user_change(user):
+        last = CashPoolHistoryDal.read_most_recent_by_user(user)
+        if not last:
+            return False
+
+        source, targets, value, currency = last
+        CashPoolDal.update(source, eval(targets),  # pylint: disable=W0123
+                           -int(float(value) * 100), currency)
+        CashPoolHistoryDal.create(source, targets, value, currency, 'REVERT',
+                                  user)
+
+        return True
+
+
 class CashPool(plugin.Plugin):
     def __init__(self, slack):
         super(CashPool, self).__init__(slack, 'cash_pool')
@@ -134,52 +268,17 @@ class CashPool(plugin.Plugin):
 
         os.remove(csv_file)
 
-    @staticmethod
-    def print_history(send, ch, message, limit=0):
-        history = CashPoolHistoryDal.read()
-        if not history:
-            send(ch, messages.NO_RECORD('cash pool'))
-            return
-
-        send(ch, messages.DISPLAYING(message))
-
-        lookup = users.UsersDal.read_lookup_table()
-        for item in history[-limit:]:
-            source, targets, value, currency, reason, user, date = item
-            targets = eval(targets)  # pylint: disable=W0123
-            if reason == 'REVERT':
-                reason = '[REVERTED BY {}]'.format(lookup[user])
-
-            send(ch, messages.SHOW_CASH_POOL_HISTORY_ITEM(
-                lookup[source], ' and '.join(lookup[k] for k in targets),
-                value, currency.upper(), reason, lookup[user], date))
-
     @plugin.Plugin.on_words({'cash pool', 'entire', 'history'})
     def show_history_entire(self, ch, _user, _groups):
-        self.print_history(self.send, ch, 'history')
+        CashPoolHelper.print_history(self.send, ch, 'history')
 
     @plugin.Plugin.on_words({'cash pool', 'history'})
     def show_history(self, ch, _user, _groups):
-        self.print_history(self.send, ch, 'recent history', limit=10)
-
-    @staticmethod
-    def revert_user_change(user):
-        last = CashPoolHistoryDal.read_most_recent_by_user(user)
-        if not last:
-            return False
-
-        source, targets, value, currency = last
-        CashPoolDal.update(source, eval(targets),  # pylint: disable=W0123
-                           -int(float(value) * 100), currency)
-        CashPoolHistoryDal.create(source, targets, value, currency, 'REVERT',
-                                  user)
-
-        return True
+        CashPoolHelper.print_history(self.send, ch, 'recent history', limit=10)
 
     @plugin.Plugin.on_words(['revert', 'my', 'cash pool', 'change'])
     def revert_own_change(self, ch, user, _groups):
-        print(user)
-        if not self.revert_user_change(user):
+        if not CashPoolHelper.revert_user_change(user):
             self.send(ch, messages.NO_REVERTABLE())
             return
 
@@ -193,7 +292,7 @@ class CashPool(plugin.Plugin):
             self.send(ch, messages.NO_USAGE())
             return
 
-        if not self.revert_user_change(user[0]):
+        if not CashPoolHelper.revert_user_change(user[0]):
             self.send(ch, messages.NO_REVERTABLE())
             return
 
@@ -217,43 +316,37 @@ class CashPool(plugin.Plugin):
         if not data:
             self.send(ch, messages.ALL_SETTLED())
 
-    @plugin.Plugin.on_regex(
-        r'(.*) (\w+) (sent|paid) \$([\d\.]+) ?(|{}) '
-        r'(to|for) ([, \w]+)\.?'.format('|'.join(CURRENCIES).lower()))
-    def send_cash(self, ch, user, groups):
-        reason, single, _direction, value, currency, _, multiple = groups
-        reason = reason[6:] if reason.startswith('jarvis') else reason
-        reason = reason.strip(' ,.?!')
-        if not currency:
-            currency = DEFAULT_CURRENCY.lower()
+    @plugin.Plugin.on_regex(r'(.*paid {} for.*)'.format(REGEX_CURRENCY))
+    def do_payment(self, ch, user, groups):
+        chunks = helper.sentence_to_chunks(groups[0].replace('jarvis', ''))
 
-        if single == 'i':
-            single = user
-        else:
-            try:
-                single = users.UsersDal.read_by_name(single)
-            except TypeError:
-                self.send_now(ch, messages.NO_USER(single))
-                return
+        chunks[0], reason = CashPoolHelper.extract_reason(
+            chunks[0], word='paid')
 
-        multiple = helper.language_to_list(multiple)
-        for idx, item in enumerate(multiple):
-            if item == 'me':
-                multiple[idx] = user
-            elif item in ('herself', 'himself'):
-                multiple[idx] = single
-            else:
-                try:
-                    multiple[idx] = users.UsersDal.read_by_name(item)
-                except TypeError:
-                    self.send_now(ch, messages.NO_USER(item))
-                    return
+        # allow multiple receivers
+        # NOTE: using 'for' interferes with reason extraction, this must not be
+        # first
+        chunks = CashPoolHelper.merge_nameonly_chunks(
+            chunks, words=('paid', 'for'))
 
-        CashPoolDal.update(single, multiple, int(float(value) * 100), currency)
-        CashPoolHistoryDal.create(single, str(multiple), value, currency,
-                                  reason, user)
+        chunks = CashPoolHelper.fixup_receivers(
+            self.send, ch, chunks, word='for')
 
-        self.send(ch, messages.ACKNOWLEDGE())
+        CashPoolHelper.do_transactions(
+            self.send, ch, user, reason, chunks, REGEX_PAID_ONE)
+
+    @plugin.Plugin.on_regex(r'(.*sent {} to.*)'.format(REGEX_CURRENCY))
+    def do_send(self, ch, user, groups):
+        chunks = helper.sentence_to_chunks(groups[0].replace('jarvis', ''))
+
+        chunks[0], reason = CashPoolHelper.extract_reason(
+            chunks[0], word='sent')
+
+        chunks = CashPoolHelper.fixup_receivers(
+            self.send, ch, chunks, word='to')
+
+        CashPoolHelper.do_transactions(
+            self.send, ch, user, reason, chunks, REGEX_SENT_ONE)
 
     @plugin.Plugin.on_words({'currency', 'default'})
     def get_default_currency(self, ch, _user, _groups):
