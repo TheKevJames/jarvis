@@ -21,7 +21,9 @@ test:
 
   override:
     - docker-compose run bot sh -c 'cd /src; pip install -r requirements.test.txt; py.test'
+
     - docker cp jarvis_bot_run_2:/src/.coverage .
+    - sed -i "s/\/src/${PWD//\//\\/}\/bot/g" .coverage
     - coveralls
 
     - docker-compose up -d
