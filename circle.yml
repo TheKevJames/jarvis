@@ -7,15 +7,28 @@ machine:
     - docker
 
 dependencies:
+  pre:
+    - pip install coveralls
+
+    - mv docker-compose.ci.yml docker-compose.override.yml
+
   override:
     - docker-compose build
 
 test:
-  override:
+  pre:
     - docker-compose run bot init
+
+  override:
+    - docker-compose run bot sh -c 'cd /src; pip install -r requirements.test.txt; py.test'
+
+    - docker cp jarvis_bot_run_2:/src/.coverage .
+    - sed -i "s/\/src/${PWD//\//\\/}\/bot/g" .coverage
+    - coveralls
 
     - docker-compose up -d
     - sleep 3
+
   post:
     - docker-compose down
 
