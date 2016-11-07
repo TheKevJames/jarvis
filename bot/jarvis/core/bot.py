@@ -97,12 +97,13 @@ class Jarvis(object):
                 mention = text.startswith('jarvis')
                 if direct or mention:
                     self.handle_message(ch, text, user)
-
                 return
 
             if kind in ('team_join', 'user_change'):
-                user = helper.get_user_fields(self.slack, user)
+                if user['is_bot']:
+                    return
 
+                user = helper.get_user_fields(self.slack, user)
                 users.UsersDal.update(*user)
                 return
         except Exception:
