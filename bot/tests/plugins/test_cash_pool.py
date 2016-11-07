@@ -67,6 +67,12 @@ class TestCashPool(object):
             mock.call(mock.ANY, mock.ANY, mock.ANY, mock.ANY,
                       'for testing purposes', 'my_name'),
         ]),
+        ('for testing purposes and other reasons kevin paid $1 for dan', [
+            mock.call('kevin', ['dan'], 100, 'cad'),
+        ], [
+            mock.call(mock.ANY, mock.ANY, mock.ANY, mock.ANY,
+                      'for testing purposes and other reasons', 'my_name'),
+        ]),
 
         # parse even split
         ('kevin paid $10 for dan and lara', [

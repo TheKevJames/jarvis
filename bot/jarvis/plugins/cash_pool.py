@@ -131,12 +131,18 @@ class CashPoolHelper(object):
 
     @staticmethod
     def extract_reason(message, word):
-        if not message.startswith('for'):
+        if not message[0].startswith('for'):
             return message, ''
 
-        split = message.split(' ')
+        split, idx = [], 0
+        while word not in split:
+            if split:
+                split += ['and']
+            split += message[idx].split(' ')
+            idx += 1
         reason = ' '.join(split[:split.index(word) - 1])
-        return message.replace(reason, '').strip(), reason
+        message = [' '.join(split).replace(reason, '').strip()] + message[idx:]
+        return message, reason
 
     @staticmethod
     def fixup_receivers(send, ch, chunks, word):
@@ -320,8 +326,7 @@ class CashPool(plugin.Plugin):
     def do_payment(self, ch, user, groups):
         chunks = helper.sentence_to_chunks(groups[0].replace('jarvis', ''))
 
-        chunks[0], reason = CashPoolHelper.extract_reason(
-            chunks[0], word='paid')
+        chunks, reason = CashPoolHelper.extract_reason(chunks, word='paid')
 
         # allow multiple receivers
         # NOTE: using 'for' interferes with reason extraction, this must not be
@@ -339,8 +344,7 @@ class CashPool(plugin.Plugin):
     def do_send(self, ch, user, groups):
         chunks = helper.sentence_to_chunks(groups[0].replace('jarvis', ''))
 
-        chunks[0], reason = CashPoolHelper.extract_reason(
-            chunks[0], word='sent')
+        chunks, reason = CashPoolHelper.extract_reason(chunks, word='sent')
 
         chunks = CashPoolHelper.fixup_receivers(
             self.send, ch, chunks, word='to')
