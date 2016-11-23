@@ -15,6 +15,7 @@ setuptools.setup(
     install_requires=['requests', 'slackclient'],
     classifiers=[
         'Programming Language :: Python',
+        'Programming Language :: Python :: 3 :: Only',
         'Development Status :: 5 - Production/Stable',
         'Natural Language :: English',
         'Intended Audience :: End Users/Desktop',

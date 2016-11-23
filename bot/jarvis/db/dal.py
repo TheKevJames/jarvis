@@ -20,11 +20,11 @@ class DalMetaclass(type):
         return collections.OrderedDict()
 
     def __new__(mcs, name, bases, namespace, **_kwargs):
-        for name, function in namespace.iteritems():
-            if callable(function):
+        for name, function in namespace.items():
+            if isinstance(function, collections.Callable):
                 namespace[name] = staticmethod(in_context(function))
         return type.__new__(mcs, name, bases, dict(namespace))
 
 
-class Dal(object):
-    __metaclass__ = DalMetaclass
+class Dal(object, metaclass=DalMetaclass):
+    pass

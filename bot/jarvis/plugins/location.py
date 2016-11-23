@@ -69,7 +69,8 @@ class Location(plugin.Plugin):
         sunrise = astronomy['sunrise'].lstrip('0')
         sunset = astronomy['sunset'].lstrip('0')
 
-        hour, minutes = map(int, time.split(':'))
+        hour, minutes = time.split(':')
+        hour, minutes = int(hour), int(minutes)
         if 5 <= hour < 12:
             greeting = 'Good morning'
         elif 12 <= hour < 17:

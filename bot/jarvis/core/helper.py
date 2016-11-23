@@ -30,12 +30,12 @@ def get_user_fields(slack, user):
 
 def human_time_to_actual(human):
     time, period = human.split(' ')
-    hours, minutes = map(int, time.split(':'))
+    hours, minutes = time.split(':')
     return int(hours) + (12 if period.lower() == 'pm' else 0), int(minutes)
 
 
 def language_to_list(items):
-    return filter(lambda u: u != 'and', re.findall(DELIMITED, items))
+    return [u for u in re.findall(DELIMITED, items) if u != 'and']
 
 
 def sentence_to_chunks(sentence):
@@ -46,7 +46,7 @@ def sentence_to_chunks(sentence):
 
 def list_to_language(items):
     if len(items) > 2:
-        for i in xrange(len(items) - 1):
+        for i in range(len(items) - 1):
             items[i] = items[i] + ','
 
     items.insert(-1, 'and')

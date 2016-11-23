@@ -14,10 +14,6 @@ import jarvis.db.users as users
 from jarvis.plugins import get_plugins
 
 
-# MonkeyPatch for slackclient not properly supporting Python 3
-slackclient._channel.Channel.__hash__ = lambda self: hash(self.id)  # pylint: disable=W0212
-
-
 logger = logging.getLogger(__name__)
 
 
@@ -55,7 +51,7 @@ class Jarvis(object):
             users.UsersDal.create(*user)
 
             c = helper.get_channel_or_fail(logger, self.slack, user[-1])
-            c.send_message(messages.GREET_USER(user).encode('ascii', 'ignore'))
+            c.send_message(messages.GREET_USER(user))
 
     def handle_message(self, channel, text, user):
         ch = helper.get_channel_or_fail(logger, self.slack, channel)
@@ -77,7 +73,7 @@ class Jarvis(object):
 
         if not responded:
             logger.warning('Could not understand message "%s".', text)
-            ch.send_message(messages.CONFUSED().encode('ascii', 'ignore'))
+            ch.send_message(messages.CONFUSED())
 
     def input(self, data):
         try:
@@ -137,6 +133,6 @@ class Jarvis(object):
 
                 for channel in channels.ChannelsDal.read(admin_only=True):
                     c = helper.get_channel_or_fail(logger, self.slack, channel)
-                    c.send_message(messages.DEATH(e).encode('ascii', 'ignore'))
+                    c.send_message(messages.DEATH(e))
 
                 sys.exit(1)

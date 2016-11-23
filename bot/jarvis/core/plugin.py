@@ -18,14 +18,17 @@ class PluginMetaclass(type):
 
     def __new__(mcs, name, bases, namespace, **_kwargs):
         result = type.__new__(mcs, name, bases, dict(namespace))
-        result.response_fns = [fn for fn in sorted(namespace.values())
+
+        functions = [fn for fn in namespace.values()
+                     if isinstance(fn, collections.Callable)]
+        functions = sorted(functions, key=lambda x: x.__name__)
+        result.response_fns = [fn for fn in functions
                                if hasattr(fn, 'regex') or hasattr(fn, 'words')]
+
         return result
 
 
-class Plugin(object):
-    __metaclass__ = PluginMetaclass
-
+class Plugin(object, metaclass=PluginMetaclass):
     def __init__(self, slack, name):
         self.slack = slack
         self.name = name
@@ -82,7 +85,7 @@ class Plugin(object):
 
     @staticmethod
     def send_now(channel, message):
-        channel.send_message(message.encode('ascii', 'ignore'))
+        channel.send_message(message)
 
     def upload_now(self, channel, name, filename, filetype):
         # See https://github.com/slackhq/python-slackclient/issues/64 for why
@@ -108,7 +111,7 @@ class Plugin(object):
                 continue
 
             fn(self, ch, user, groups)
-            for channel, msgs in self.buffer.iteritems():
+            for channel, msgs in self.buffer.items():
                 self.send_now(channel, '\n'.join(msgs))
             self.reset_buffer()
 
