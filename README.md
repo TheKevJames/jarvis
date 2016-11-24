@@ -8,7 +8,10 @@ First, set up a bot user on
 [your slack instance](https://slack.com/apps/manage/custom-integrations). His
 name should be `jarvis` and you should use [this icon](jarvis.png).
 
-With his API token exported to your terminal as `SLACK_TOKEN`, run:
+With his API token exported to your terminal as `SLACK_TOKEN` (instructions for
+[Windows](http://www.dowdandassociates.com/blog/content/howto-set-an-environment-variable-in-windows-command-line-and-registry/)
+and [Linux / OSX](https://www.cyberciti.biz/faq/set-environment-variable-linux/)),
+run:
 
     docker-compose build         # or docker-compose pull
     docker-compose run bot init
