@@ -4,7 +4,7 @@ import setuptools
 
 setuptools.setup(
     name='jarvis',
-    version='2.1.0',
+    version='2.2.0',
     description='A python slackbot',
     keywords='jarvis slack slackbot',
     author='Kevin James',
