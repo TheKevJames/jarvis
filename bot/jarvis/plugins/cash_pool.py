@@ -250,7 +250,7 @@ class CashPool(plugin.Plugin):
         self.send_now(ch, messages.ACKNOWLEDGE())
 
         csv_file = 'cash_pool_history.csv'
-        with open(csv_file, 'wb') as f:
+        with open(csv_file, 'w') as f:
             writer = csv.writer(f)
             writer.writerow(CashPoolHistoryDal.columns)
 
@@ -261,7 +261,7 @@ class CashPool(plugin.Plugin):
             if reason == 'REVERT':
                 reason = '[REVERTED BY {}]'.format(lookup[user])
 
-            with open(csv_file, 'ab') as f:
+            with open(csv_file, 'a') as f:
                 writer = csv.writer(f)
                 writer.writerow(
                     [lookup[source], [str(lookup[k]) for k in targets],
