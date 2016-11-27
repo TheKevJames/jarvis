@@ -21,7 +21,6 @@ class PluginMetaclass(type):
 
         functions = [fn for fn in namespace.values()
                      if isinstance(fn, collections.Callable)]
-        functions = sorted(functions, key=lambda x: x.__name__)
         result.response_fns = [fn for fn in functions
                                if hasattr(fn, 'regex') or hasattr(fn, 'words')]
 
