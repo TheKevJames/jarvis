@@ -8,5 +8,7 @@ services:
       - SLACK_TOKEN=${SLACK_TOKEN}
       - TORRENTDAY_COOKIE=${TORRENTDAY_COOKIE}
       - WORLD_WEATHER_TOKEN=${WORLD_WEATHER_TOKEN}
+    ports:
+      - "28007:8080"
     volumes:
       - ./db:/db

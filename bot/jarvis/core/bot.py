@@ -1,6 +1,9 @@
 import asyncio
+import functools
 import logging
 import sys
+
+import aiohttp.web
 
 import jarvis.core.async as async
 import jarvis.core.helper as helper
@@ -108,18 +111,38 @@ class Jarvis:
             await asyncio.sleep(0)
 
     def run(self):
+        logger.debug('Initializing plugins...')
         self.plugins = get_plugins(self.slack)
 
-        logger.debug('Starting event loop')
+        logger.debug('Configuring event loop...')
         loop = asyncio.get_event_loop()
         loop.set_exception_handler(async.looping_exception_handler)
 
         asyncio.ensure_future(self.slack.keepalive())
         asyncio.ensure_future(self.rtm_respond())
 
+        logger.debug('Building web server...')
+        app = aiohttp.web.Application()
+        for plugin in self.plugins:
+            for function in plugin.api_fns:
+                app.router.add_route(function.method, function.route,
+                                     functools.partial(function, plugin))
+
+        handler = app.make_handler()
+        f = loop.create_server(handler, '0.0.0.0', 8080)
+        srv = loop.run_until_complete(f)
+
         try:
+            logger.debug('Running')
             loop.run_forever()
+        except KeyboardInterrupt:
+            pass
         finally:
+            srv.close()
+            loop.run_until_complete(srv.wait_closed())
+            loop.run_until_complete(app.shutdown())
+            loop.run_until_complete(handler.finish_connections(60.0))
+            loop.run_until_complete(app.cleanup())
             loop.close()
 
         if not loop.exception:

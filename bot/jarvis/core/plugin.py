@@ -21,6 +21,8 @@ class PluginMetaclass(type):
 
         functions = [fn for fn in namespace.values()
                      if isinstance(fn, collections.Callable)]
+
+        result.api_fns = [fn for fn in functions if hasattr(fn, 'route')]
         result.response_fns = [fn for fn in functions
                                if hasattr(fn, 'regex') or hasattr(fn, 'words')]
 
@@ -59,6 +61,15 @@ class Plugin(metaclass=PluginMetaclass):
             return False
 
         return ['ok']
+
+    @staticmethod
+    def on_api(method, route):
+        def on_api_decorator(func):
+            func.method = method
+            func.route = '/api/plugin/{}/{}'.format(
+                func.__qualname__.split('.')[0].lower(), route)
+            return func
+        return on_api_decorator
 
     @staticmethod
     def on_regex(msg):

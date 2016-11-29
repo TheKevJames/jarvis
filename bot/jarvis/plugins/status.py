@@ -5,6 +5,8 @@ Admins can also tell me to "shut down" for repairs.
 import logging
 import sys
 
+import aiohttp.web
+
 import jarvis.core.helper as helper
 import jarvis.core.messages as messages
 import jarvis.core.plugin as plugin
@@ -38,3 +40,7 @@ class Status(plugin.Plugin):
     @plugin.Plugin.on_regex(r".*hello|(you (there|up)).*")
     def you_there(self, ch, _user, _groups):
         self.send(ch, messages.GREET())
+
+    @plugin.Plugin.on_api('GET', 'ping')
+    async def ping(self, request):
+        return aiohttp.web.Response(text='ok')
