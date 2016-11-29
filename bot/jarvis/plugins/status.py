@@ -42,5 +42,5 @@ class Status(plugin.Plugin):
         self.send(ch, messages.GREET())
 
     @plugin.Plugin.on_api('GET', 'ping')
-    async def ping(self, request):
+    async def ping(self, _request):
         return aiohttp.web.Response(text='ok')
