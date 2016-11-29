@@ -26,7 +26,7 @@ squirrels = [
 
 class ShipIt(plugin.Plugin):
     def __init__(self, slack):
-        super(ShipIt, self).__init__(slack, 'ship_it')
+        super().__init__(slack, 'ship_it')
 
     def help(self, ch):
         self.send_now(ch, __doc__.replace('\n', ' '))

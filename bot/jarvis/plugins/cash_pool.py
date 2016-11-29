@@ -105,7 +105,7 @@ class CashPoolHistoryDal(dal.Dal):
                            """).fetchone()
 
 
-class CashPoolHelper(object):
+class CashPoolHelper:
     @staticmethod
     def do_transactions(send, ch, user, reason, transactions, regex):
         for tx in transactions:
@@ -235,7 +235,7 @@ class CashPoolHelper(object):
 
 class CashPool(plugin.Plugin):
     def __init__(self, slack):
-        super(CashPool, self).__init__(slack, 'cash_pool')
+        super().__init__(slack, 'cash_pool')
 
     def help(self, ch):
         self.send_now(ch, __doc__.replace('\n', ' '))

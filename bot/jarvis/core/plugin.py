@@ -27,7 +27,7 @@ class PluginMetaclass(type):
         return result
 
 
-class Plugin(object, metaclass=PluginMetaclass):
+class Plugin(metaclass=PluginMetaclass):
     def __init__(self, slack, name):
         self.slack = slack
         self.name = name

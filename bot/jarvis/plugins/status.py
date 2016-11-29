@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 class Status(plugin.Plugin):
     def __init__(self, slack):
-        super(Status, self).__init__(slack, 'status')
+        super().__init__(slack, 'status')
 
         for channel in channels.ChannelsDal.read(admin_only=True):
             ch = helper.get_channel_or_fail(logger, self.slack, channel)

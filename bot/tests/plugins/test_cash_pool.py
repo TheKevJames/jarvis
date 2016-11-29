@@ -5,7 +5,7 @@ import jarvis.db.users
 import jarvis.plugins.cash_pool as cash_pool
 
 
-class TestCashPool(object):
+class TestCashPool:
     @classmethod
     def setup_class(cls):
         def read_by_name(name):

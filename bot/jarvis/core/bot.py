@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 __version__ = '2.2.0'
 
 
-class Jarvis(object):
+class Jarvis:
     def __init__(self, token):
         self.last_ping = 0
         self.uuid = None

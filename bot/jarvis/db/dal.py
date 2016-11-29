@@ -26,5 +26,5 @@ class DalMetaclass(type):
         return type.__new__(mcs, name, bases, dict(namespace))
 
 
-class Dal(object, metaclass=DalMetaclass):
+class Dal(metaclass=DalMetaclass):
     pass
