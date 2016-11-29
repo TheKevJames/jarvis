@@ -1,11 +1,8 @@
+import asyncio
 import logging
 import sys
-import time
 
-import slackclient
-# https://github.com/slackhq/python-slackclient/issues/118
-from websocket import WebSocketConnectionClosedException
-
+import jarvis.core.async as async
 import jarvis.core.helper as helper
 import jarvis.core.messages as messages
 import jarvis.db.channels as channels
@@ -22,12 +19,11 @@ __version__ = '2.2.0'
 
 class Jarvis:
     def __init__(self, token):
-        self.last_ping = 0
         self.uuid = None
         self.plugins = None
 
         try:
-            self.slack = slackclient.SlackClient(token)
+            self.slack = async.SlackClient(token)
             self.slack.rtm_connect()
 
             self.uuid = self.slack.api_call('auth.test')['user_id']
@@ -106,33 +102,31 @@ class Jarvis:
             logger.error('Error handling message %s', str(data))
             raise
 
-    def keepalive(self):
-        now = int(time.time())
-        if now > self.last_ping + 3:
-            self.slack.server.ping()
-            self.last_ping = now
+    async def rtm_respond(self):
+        async for message in self.slack.rtm_read():
+            self.input(message)
+            await asyncio.sleep(0)
 
     def run(self):
         self.plugins = get_plugins(self.slack)
 
-        while True:
-            try:
-                for message in self.slack.rtm_read():
-                    self.input(message)
+        logger.debug('Starting event loop')
+        loop = asyncio.get_event_loop()
+        loop.set_exception_handler(async.looping_exception_handler)
 
-                self.keepalive()
-                time.sleep(.1)
-            except WebSocketConnectionClosedException as e:
-                logger.error('Caught websocket disconnect, reconnecting...')
-                logger.exception(e)
+        asyncio.ensure_future(self.slack.keepalive())
+        asyncio.ensure_future(self.rtm_respond())
 
-                self.slack.rtm_connect()
-            except Exception as e:
-                logger.error('Caught unhandled exception, exiting...')
-                logger.exception(e)
+        try:
+            loop.run_forever()
+        finally:
+            loop.close()
 
-                for channel in channels.ChannelsDal.read(admin_only=True):
-                    c = helper.get_channel_or_fail(logger, self.slack, channel)
-                    c.send_message(messages.DEATH(e))
+        if not loop.exception:
+            return
 
-                sys.exit(1)
+        for channel in channels.ChannelsDal.read(admin_only=True):
+            c = helper.get_channel_or_fail(logger, self.slack, channel)
+            c.send_message(messages.DEATH(loop.exception))
+
+        sys.exit(1)
