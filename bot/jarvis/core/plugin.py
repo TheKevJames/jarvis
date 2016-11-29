@@ -28,9 +28,9 @@ class PluginMetaclass(type):
 
 
 class Plugin(metaclass=PluginMetaclass):
-    def __init__(self, slack, name):
+    def __init__(self, slack):
         self.slack = slack
-        self.name = name
+        self.name = self.__class__.__name__.lower()
 
         self.buffer = None
         self.reset_buffer()

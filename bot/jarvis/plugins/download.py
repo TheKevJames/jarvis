@@ -16,9 +16,6 @@ WATCH_DIR = os.path.join(os.path.abspath(os.sep), 'torrent', 'watch')
 
 
 class Download(plugin.Plugin):
-    def __init__(self, slack):
-        super().__init__(slack, 'download')
-
     def help(self, ch):
         if not os.path.isdir(WATCH_DIR):
             self.send_now(ch, messages.ERROR_NOT_ENABLED('torrent'))

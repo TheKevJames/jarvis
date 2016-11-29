@@ -36,9 +36,6 @@ class LocationDal(dal.Dal):
 
 
 class Location(plugin.Plugin):
-    def __init__(self, slack):
-        super().__init__(slack, 'location')
-
     def help(self, ch):
         self.send_now(ch, __doc__.replace('\n', ' '))
 
