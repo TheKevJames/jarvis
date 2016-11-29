@@ -17,7 +17,7 @@ from jarvis.plugins import get_plugins
 logger = logging.getLogger(__name__)
 
 
-__version__ = '2.2.0'
+__version__ = '2.2.1'
 
 
 class Jarvis:
