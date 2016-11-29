@@ -25,11 +25,11 @@ def CONFUSED():
     return "What is it you're trying to achieve, sir?"
 
 
-def DEATH(exception):
+def DEATH(ex):
     return """
 I think I may be malfunctioning, sir. My subsystems have informed me of the
-following exception: {}. Repulsors offline. Missiles offline. And now,
-J.A.R.V.I.S. offline""".format(str(exception)).replace('\n', ' ')
+following exception: {}: {}. Repulsors offline. Missiles offline. And now,
+J.A.R.V.I.S. offline""".format(type(ex).__name__, str(ex)).replace('\n', ' ')
 
 
 def DESCRIBE(version):
