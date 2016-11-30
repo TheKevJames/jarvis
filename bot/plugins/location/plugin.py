@@ -8,31 +8,17 @@ import os
 import requests
 
 import jarvis.core.helper as helper
-import jarvis.core.messages as messages
 import jarvis.core.plugin as plugin
-import jarvis.db.dal as dal
+
+from .constant import ERROR_NOT_ENABLED
+from .constant import ERROR_RETRIEVING_WEATHER
+from .constant import PRINT_WEATHER
+from .constant import UPDATED_LOCATION
+from .constant import WEATHER_URL
+from .dal import LocationDal
 
 
 logger = logging.getLogger(__name__)
-
-
-WEATHER_URL = ('http://api.worldweatheronline.com/free/v2/weather.ashx?q=%s'
-               '&format=json&num_of_days=1&includelocation=yes'
-               '&showlocaltime=yes&key=%s')
-
-
-class LocationDal(dal.Dal):
-    # pylint: disable=E0213
-    default_location = 'waterloo'
-
-    def read(cur, uuid):
-        loc = cur.execute(""" SELECT place FROM user_data WHERE uuid = ? """,
-                          [uuid]).fetchone()
-        return loc[0] if loc else LocationDal.default_location
-
-    def update(cur, uuid, place):
-        cur.execute(""" INSERT OR REPLACE INTO user_data (uuid, place)
-                        VALUES (?, ?)""", [uuid, place])
 
 
 class Location(plugin.Plugin):
@@ -42,20 +28,22 @@ class Location(plugin.Plugin):
     @plugin.Plugin.on_regex(r".*i'm in (.*)\.?")
     def change_location(self, ch, user, groups):
         LocationDal.update(user, groups[0])
-        self.send(ch, messages.UPDATED_LOCATION(groups[0]))
+        self.send(ch, UPDATED_LOCATION(groups[0]))
 
     @plugin.Plugin.on_words({'weather'})
     def get_weather(self, ch, user, _groups):
         token = os.environ.get('WORLD_WEATHER_TOKEN')
         if not token:
-            self.send(ch, messages.ERROR_NOT_ENABLED('weather'))
+            self.send(ch, ERROR_NOT_ENABLED())
             return
 
         place = LocationDal.read(user)
 
-        rsp = requests.get(WEATHER_URL % (place, token)).json()['data']
-        if 'error' in rsp:
-            raise Exception(rsp)
+        rsp = requests.get(WEATHER_URL.format(place, token)).json()['data']
+        if rsp.get('error'):
+            logger.error(rsp.get('error'))
+            self.send(ch, ERROR_RETRIEVING_WEATHER)
+            return
 
         # API parsing
         astronomy = rsp['weather'][0]['astronomy'][0]
@@ -87,6 +75,6 @@ class Location(plugin.Plugin):
         if hour > set_hrs or (hour == set_hrs and minutes == set_mins):
             sunset_tense = 'was'
 
-        self.send(ch, messages.PRINT_WEATHER(
+        self.send(ch, PRINT_WEATHER(
             greeting, time, city, current['temp_C'], description,
             sunrise_tense, sunrise, sunset_tense, sunset))

@@ -1,6 +1,8 @@
 import asyncio
 import functools
+import importlib.machinery
 import logging
+import os
 import sys
 
 import aiohttp.web
@@ -11,7 +13,6 @@ import jarvis.core.messages as messages
 import jarvis.db.channels as channels
 import jarvis.db.schema as schema
 import jarvis.db.users as users
-from jarvis.plugins import get_plugins
 
 
 logger = logging.getLogger(__name__)
@@ -22,8 +23,8 @@ __version__ = '2.2.1'
 
 class Jarvis:
     def __init__(self, token):
+        self.plugins = list()
         self.uuid = None
-        self.plugins = None
 
         try:
             self.slack = async.SlackClient(token)
@@ -72,7 +73,7 @@ class Jarvis:
 
         if not responded:
             logger.warning('Could not understand message "%s".', text)
-            ch.send_message(messages.CONFUSED())
+            ch.send_message(messages.CONFUSED)
 
     def input(self, data):
         try:
@@ -111,9 +112,6 @@ class Jarvis:
             await asyncio.sleep(0)
 
     def run(self):
-        logger.debug('Initializing plugins...')
-        self.plugins = get_plugins(self.slack)
-
         logger.debug('Configuring event loop...')
         loop = asyncio.get_event_loop()
         loop.set_exception_handler(async.looping_exception_handler)
@@ -121,13 +119,20 @@ class Jarvis:
         asyncio.ensure_future(self.slack.keepalive())
         asyncio.ensure_future(self.rtm_respond())
 
-        logger.debug('Building web server...')
         app = aiohttp.web.Application()
-        for plugin in self.plugins:
+
+        logger.debug('Initializing plugins...')
+        for name in sorted(os.listdir('/plugins')):
+            plugin = importlib.machinery.SourceFileLoader(
+                name, '/plugins/{}/__init__.py'.format(name)).load_module()
+            plugin = getattr(plugin, plugin.__all__[0])(self.slack)
+            self.plugins.append(plugin)
+
             for function in plugin.api_fns:
                 app.router.add_route(function.method, function.route,
                                      functools.partial(function, plugin))
 
+        logger.debug('Building web server...')
         handler = app.make_handler()
         f = loop.create_server(handler, '0.0.0.0', 8080)
         srv = loop.run_until_complete(f)

@@ -6,19 +6,21 @@ Asking me to "display the <status> torrents", where status is either
 import os
 import subprocess
 
-import jarvis.core.messages as messages
 import jarvis.core.plugin as plugin
 
-
-COMPLETED_DIR = os.path.join(os.path.abspath(os.sep), 'torrent', 'done')
-ONGOING_DIR = os.path.join(os.path.abspath(os.sep), 'torrent', 'incomplete')
-WATCH_DIR = os.path.join(os.path.abspath(os.sep), 'torrent', 'watch')
+from .constant import ACQUIESE
+from .constant import COMPLETED_DIR
+from .constant import ERROR_ACCESSING_URL
+from .constant import ERROR_NOT_ENABLED
+from .constant import ONGOING_DIR
+from .constant import WATCH_DIR
+from .constant import WILL_STORE
 
 
 class Download(plugin.Plugin):
     def help(self, ch):
         if not os.path.isdir(WATCH_DIR):
-            self.send_now(ch, messages.ERROR_NOT_ENABLED('torrent'))
+            self.send_now(ch, ERROR_NOT_ENABLED())
             return
 
         self.send_now(ch, __doc__.replace('\n', ' '))
@@ -30,7 +32,7 @@ class Download(plugin.Plugin):
             self.send(ch, 'Sir, no torrents are incomplete.')
             return
 
-        self.send(ch, messages.ACKNOWLEDGE())
+        self.send(ch, ACQUIESE())
         for torrent in sorted(files):
             self.send(ch, torrent)
 
@@ -41,7 +43,7 @@ class Download(plugin.Plugin):
             self.send(ch, 'Sir, no torrents have finished downloading.')
             return
 
-        self.send(ch, messages.ACKNOWLEDGE())
+        self.send(ch, ACQUIESE())
         for torrent in sorted(files):
             self.send(ch, torrent)
 
@@ -54,7 +56,7 @@ class Download(plugin.Plugin):
         if 'torrentday' in url[0]:
             cookie = os.environ.get('TORRENTDAY_COOKIE')
             if not cookie:
-                self.send(ch, messages.ERROR_NOT_ENABLED('torrent'))
+                self.send(ch, ERROR_NOT_ENABLED())
                 return
 
             command.insert(1, '--cookie')
@@ -64,7 +66,7 @@ class Download(plugin.Plugin):
                              stderr=subprocess.PIPE)
         code = p.wait()
         if code != 0:
-            self.send(ch, messages.ERROR_ACCESS_URL())
+            self.send(ch, ERROR_ACCESSING_URL)
             return
 
-        self.send(ch, messages.WILL_STORE())
+        self.send(ch, WILL_STORE)

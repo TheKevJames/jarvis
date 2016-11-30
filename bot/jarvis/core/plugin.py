@@ -112,7 +112,7 @@ class Plugin(metaclass=PluginMetaclass):
                 continue
 
             if hasattr(fn, 'auth') and not users.UsersDal.is_admin(user):
-                self.send(ch, messages.NO_AUTHORIZATION())
+                self.send(ch, messages.NO_AUTHORIZATION)
 
                 for channel in channels.ChannelsDal.read(admin_only=True):
                     c = helper.get_channel_or_fail(logger, self.slack, channel)

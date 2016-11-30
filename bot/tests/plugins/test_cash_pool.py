@@ -2,7 +2,9 @@ import mock
 import pytest
 
 import jarvis.db.users
-import jarvis.plugins.cash_pool as cash_pool
+
+import plugins.cash_pool.plugin as cash_pool
+import plugins.cash_pool.helper as helper
 
 
 class TestCashPool:
@@ -17,8 +19,11 @@ class TestCashPool:
         jarvis.db.users.UsersDal.read_by_name = mock.MagicMock(
             side_effect=read_by_name)
 
-        cls.db = cash_pool.CashPoolDal = mock.MagicMock()
-        cls.db_history = cash_pool.CashPoolHistoryDal = mock.MagicMock()
+        cls.db = helper.CashPoolDal = cash_pool.CashPoolDal = mock.MagicMock()
+        cls.db_history = \
+            helper.CashPoolHistoryDal = \
+            cash_pool.CashPoolHistoryDal = \
+            mock.MagicMock()
         cls.pool = cash_pool.CashPool(mock.MagicMock())
 
     # NOTE: create mock wrapped functions
