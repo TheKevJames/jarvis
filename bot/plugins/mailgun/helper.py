@@ -31,7 +31,7 @@ class MailgunHelper:
 
         # Ensure request is not out-of-date
         now = time.time()
-        if now - timestamp > 60:
+        if now - float(timestamp) > 60:
             logger.info('Rejected stale webhook with timestamp %s at %s.',
                         timestamp, now)
             return aiohttp.web.Response(status=422, text='stale data')

@@ -30,7 +30,7 @@ class Mailgun(plugin.Plugin):
         post_data = await request.post()
 
         response = MailgunHelper.validate(post_data['signature'],
-                                          float(post_data['timestamp']),
+                                          post_data['timestamp'],
                                           post_data['token'])
         if response:
             return response
