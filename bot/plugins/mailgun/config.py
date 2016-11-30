@@ -1,0 +1,3 @@
+DOMAINS = {
+    'thekev.in': 'kevin',
+}
