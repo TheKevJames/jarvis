@@ -21,8 +21,10 @@ class UsersDal(dal.Dal):
             """ SELECT uuid, first_name FROM user """).fetchall()}
 
     def read_by_name(cur, name):
-        return cur.execute(""" SELECT uuid FROM user WHERE first_name = ? """,
-                           [name]).fetchone()[0]
+        return cur.execute(""" SELECT uuid, first_name, last_name, email,
+                                      username, is_admin, channel
+                               FROM user WHERE first_name = ? """,
+                           [name]).fetchone()
 
     def update(cur, uuid, first_name, last_name, email, username, is_admin,
                channel):

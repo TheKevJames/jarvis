@@ -73,7 +73,7 @@ class CashPoolHelper:
     @staticmethod
     def get_real_receiver(send, ch, user, sender, receiver):
         try:
-            return users.UsersDal.read_by_name(receiver)
+            return users.UsersDal.read_by_name(receiver)[0]
         except TypeError:
             if receiver not in ('me', 'himself', 'herself'):
                 send(ch, NO_USER(receiver))
@@ -87,7 +87,7 @@ class CashPoolHelper:
     @staticmethod
     def get_real_sender(send, ch, user, sender):
         try:
-            return users.UsersDal.read_by_name(sender)
+            return users.UsersDal.read_by_name(sender)[0]
         except TypeError:
             if sender != 'i':
                 send(ch, NO_USER(sender))

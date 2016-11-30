@@ -13,7 +13,7 @@ class TestCashPool:
         def read_by_name(name):
             if name in ('i', 'me', 'himself', 'herself'):
                 raise TypeError
-            return name
+            return (name, )
 
         jarvis.db.users.UsersDal.is_admin = True
         jarvis.db.users.UsersDal.read_by_name = mock.MagicMock(
