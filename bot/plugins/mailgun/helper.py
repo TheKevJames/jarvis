@@ -24,6 +24,11 @@ class MailgunHelper:
 
     @classmethod
     def validate(cls, signature, timestamp, token):
+        # Fail-fast on missing API key
+        key = MAILGUN_API_KEY
+        if not key:
+            return aiohttp.web.Response(status=500, text='missing API key')
+
         # Ensure request is not out-of-date
         now = time.time()
         if now - timestamp > 60:
@@ -39,10 +44,6 @@ class MailgunHelper:
         cls.tokens.add(token)
 
         # Ensure request is authenticated
-        key = MAILGUN_API_KEY
-        if not key:
-            return aiohttp.web.Response(status=500, text='missing API key')
-
         hexdigest = hmac.new(key=key.encode(),
                              msg='{}{}'.format(timestamp, token).encode(),
                              digestmod=hashlib.sha256).hexdigest()
