@@ -133,7 +133,7 @@ class Jarvis:
                                      functools.partial(function, plugin))
 
         logger.debug('Building web server...')
-        handler = app.make_handler()
+        handler = app.make_handler(access_log=None)
         f = loop.create_server(handler, '0.0.0.0', 8080)
         srv = loop.run_until_complete(f)
 
