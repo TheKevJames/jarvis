@@ -1,3 +1,0 @@
-DOMAINS = {
-    'thekev.in': 'kevin',
-}

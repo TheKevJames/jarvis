@@ -6,8 +6,6 @@ import time
 
 import aiohttp.web
 
-from .config import DOMAINS
-
 
 MAILGUN_API_KEY = os.environ.get('MAILGUN_API_KEY')
 
@@ -17,10 +15,6 @@ logger = logging.getLogger(__name__)
 
 class MailgunHelper:
     tokens = set()
-
-    @staticmethod
-    def username_for_domain(domain):
-        return DOMAINS.get(domain)
 
     @classmethod
     def validate(cls, signature, timestamp, token):
