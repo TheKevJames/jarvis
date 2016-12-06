@@ -44,4 +44,4 @@ deployment:
       - tar xjf github-release.tar.bz2
       - rm -f github-release.tar.bz2
 
-      - ./bin/linux/amd64/github-release release --user TheKevJames --repo jarvis --tag $(git tag --sort=version:refname | tail -n1) --name "Jarvis" --description "$(git log $(git tag --sort=version:refname | tail -n2 | head -n1)..$(git tag --sort=version:refname | tail -n1) --pretty=format:'- %s')"
+      - ./bin/linux/amd64/github-release release --user TheKevJames --repo jarvis --tag ${CIRCLE_TAG} --name "Jarvis v${CIRCLE_TAG}" --description "$(git log $(git tag --sort=version:refname | tail -n2 | head -n1)..${CIRCLE_TAG} --pretty=format:'- %s')"

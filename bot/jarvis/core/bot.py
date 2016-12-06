@@ -18,7 +18,7 @@ import jarvis.db.users as users
 logger = logging.getLogger(__name__)
 
 
-__version__ = '2.2.1'
+__version__ = '2.3.1'
 
 
 class Jarvis:
