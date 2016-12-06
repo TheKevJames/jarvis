@@ -7,7 +7,7 @@ import time
 import aiohttp.web
 
 
-MAILGUN_API_KEY = os.environ.get('MAILGUN_API_KEY')
+KEYS = {k for n, k in os.environ.items() if n.startswith('MAILGUN_API_KEY')}
 
 
 logger = logging.getLogger(__name__)
@@ -18,10 +18,9 @@ class MailgunHelper:
 
     @classmethod
     def validate(cls, signature, timestamp, token):
-        # Fail-fast on missing API key
-        key = MAILGUN_API_KEY
-        if not key:
-            return aiohttp.web.Response(status=500, text='missing API key')
+        # Fail-fast on missing API key(s)
+        if not KEYS:
+            return aiohttp.web.Response(status=500, text='missing API key(s)')
 
         # Ensure request is not out-of-date
         now = time.time()
@@ -38,9 +37,12 @@ class MailgunHelper:
         cls.tokens.add(token)
 
         # Ensure request is authenticated
-        hexdigest = hmac.new(key=key.encode(),
-                             msg='{}{}'.format(timestamp, token).encode(),
-                             digestmod=hashlib.sha256).hexdigest()
-        if hexdigest != signature:
-            logger.info('Rejected webhook with bad digest.')
-            return aiohttp.web.Response(status=403, text='invalid signature')
+        for key in KEYS:
+            hexdigest = hmac.new(key=key.encode(),
+                                 msg='{}{}'.format(timestamp, token).encode(),
+                                 digestmod=hashlib.sha256).hexdigest()
+            if hexdigest == signature:
+                return
+
+        logger.info('Rejected webhook with bad digest.')
+        return aiohttp.web.Response(status=403, text='invalid signature')
