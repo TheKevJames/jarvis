@@ -37,8 +37,17 @@ class Jarvis:
             sys.exit(1)
 
     def init(self):
+        logger.debug('Initializing database...')
         schema.initialize()
 
+        logger.debug('Initializing plugins...')
+        for name in sorted(os.listdir('/plugins')):
+            plugin = importlib.machinery.SourceFileLoader(
+                name, '/plugins/{}/__init__.py'.format(name)).load_module()
+            plugin = getattr(plugin, plugin.__all__[0])(self.slack)
+            plugin.initialize()
+
+        logger.debug('Initializing users...')
         user_list = self.slack.api_call('users.list')
         for user in user_list['members']:
             if user['deleted']:

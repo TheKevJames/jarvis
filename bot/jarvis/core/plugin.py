@@ -129,3 +129,6 @@ class Plugin(metaclass=PluginMetaclass):
 
     def help(self, ch):
         raise NotImplementedError
+
+    def initialize(self):
+        pass

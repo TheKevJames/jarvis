@@ -16,6 +16,7 @@ from .constant import PRINT_WEATHER
 from .constant import UPDATED_LOCATION
 from .constant import WEATHER_URL
 from .dal import LocationDal
+from .schema import initialize
 
 
 logger = logging.getLogger(__name__)
@@ -24,6 +25,10 @@ logger = logging.getLogger(__name__)
 class Location(plugin.Plugin):
     def help(self, ch):
         self.send_now(ch, __doc__.replace('\n', ' '))
+
+    @staticmethod
+    def initialize():
+        initialize()
 
     @plugin.Plugin.on_regex(r".*i'm in (.*)\.?")
     def change_location(self, ch, user, groups):

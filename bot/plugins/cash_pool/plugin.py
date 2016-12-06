@@ -43,11 +43,16 @@ from .constant import SHOW_CASH_POOL_ITEM
 from .dal import CashPoolDal
 from .dal import CashPoolHistoryDal
 from .helper import CashPoolHelper
+from .schema import initialize
 
 
 class CashPool(plugin.Plugin):
     def help(self, ch):
         self.send_now(ch, __doc__.replace('\n', ' '))
+
+    @staticmethod
+    def initialize():
+        initialize()
 
     @plugin.Plugin.on_words({'cash pool', 'csv', 'history'})
     def show_history_csv(self, ch, _user, _groups):
