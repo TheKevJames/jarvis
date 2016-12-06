@@ -20,6 +20,12 @@ class UsersDal(dal.Dal):
         return {k: v for k, v in cur.execute(
             """ SELECT uuid, first_name FROM user """).fetchall()}
 
+    def read(cur, uuid):
+        return cur.execute(""" SELECT uuid, first_name, last_name, email,
+                                      username, is_admin, channel
+                               FROM user WHERE uuid = ? """,
+                           [uuid]).fetchone()
+
     def read_by_name(cur, name):
         return cur.execute(""" SELECT uuid, first_name, last_name, email,
                                       username, is_admin, channel

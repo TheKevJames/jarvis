@@ -1,6 +1,0 @@
-OWNERS = {
-    'thekevjames': 'kevin',
-}
-
-REPOSITORIES = {
-}

@@ -12,7 +12,8 @@ import jarvis.core.plugin as plugin
 import jarvis.db.users as users
 
 from .constant import IMAGE_PUSHED
-from .helper import DockerhubHelper
+from .dal import DockerhubDal
+from .schema import initialize
 
 
 logger = logging.getLogger(__name__)
@@ -21,6 +22,10 @@ logger = logging.getLogger(__name__)
 class Dockerhub(plugin.Plugin):
     def help(self, ch):
         self.send_now(ch, __doc__.replace('\n', ' '))
+
+    @staticmethod
+    def initialize():
+        initialize()
 
     @plugin.Plugin.on_api('POST', 'webhook')
     async def webhook(self, request):
@@ -33,16 +38,16 @@ class Dockerhub(plugin.Plugin):
             logger.info('Could not parse webhook data %s.', json_data)
             return aiohttp.web.Response(status=406, text='unparseable webhook')
 
-        username = DockerhubHelper.username_for_repository(repo_name)
-        if username:
-            channel = users.UsersDal.read_by_name(username)[6]
+        uuid = DockerhubDal.read_by_repository(repo_name)
+        if uuid:
+            channel = users.UsersDal.read(uuid)[6]
             ch = helper.get_channel_or_fail(logger, self.slack, channel)
             self.send_now(ch, IMAGE_PUSHED(repo_name))
             return aiohttp.web.Response(text='ok')
 
-        username = DockerhubHelper.username_for_owner(owner)
-        if username:
-            channel = users.UsersDal.read_by_name(username)[6]
+        uuid = DockerhubDal.read_by_username(owner)
+        if uuid:
+            channel = users.UsersDal.read(uuid)[6]
             ch = helper.get_channel_or_fail(logger, self.slack, channel)
             self.send_now(ch, IMAGE_PUSHED(repo_name))
             return aiohttp.web.Response(text='ok')
