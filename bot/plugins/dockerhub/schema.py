@@ -1,8 +1,9 @@
 """
 DROP TABLE IF EXISTS dockerhub_repository;
 CREATE TABLE dockerhub_repository (
-    uuid            CHAR(16)    PRIMARY KEY,
-    repository      CHAR(64),
+    uuid            CHAR(16)    NOT NULL,
+    repository      CHAR(64)    NOT NULL,
+    PRIMARY KEY (uuid, repository),
     FOREIGN KEY (uuid) REFERENCES user(uuid)
 );
 DROP TABLE IF EXISTS dockerhub_username;
