@@ -93,6 +93,11 @@ class Plugin(metaclass=PluginMetaclass):
     def send(self, channel, message):
         self.buffer[channel].append(message)
 
+    def send_attachment(self, channel, attachment):
+        self.slack.api_call(
+            'chat.postMessage', channel=channel, as_user=True,
+            attachments=[attachment])
+
     @staticmethod
     def send_now(channel, message):
         channel.send_message(message)
