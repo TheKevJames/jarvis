@@ -28,6 +28,7 @@ class League(plugin.Plugin):
     @plugin.Plugin.on_api('POST', 'new_patch')
     async def new_patch(self, request):
         await request.post()
+        logger.debug('Scraping new patch data.')
 
         async with aiohttp.ClientSession() as session:
             async with session.get(PATCH_URL) as resp:
