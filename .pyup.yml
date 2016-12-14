@@ -1,0 +1,3 @@
+requirements:
+  - bot/requirements.test.txt:
+      pin: False
