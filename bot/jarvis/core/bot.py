@@ -6,6 +6,7 @@ import os
 import sys
 
 import aiohttp.web
+import raven
 
 import jarvis.core.async as async
 import jarvis.core.helper as helper
@@ -15,6 +16,10 @@ import jarvis.db.schema as schema
 import jarvis.db.users as users
 
 
+SENTRY_DSN = os.environ.get('SENTRY_DSN')
+
+
+sentry = raven.Client(dsn=SENTRY_DSN)
 logger = logging.getLogger(__name__)
 
 
@@ -34,6 +39,7 @@ class Jarvis:
         except Exception as e:
             logger.error('Could not start JARVIS.')
             logger.exception(e)
+            sentry.captureException()
             sys.exit(1)
 
     def init(self):
@@ -82,6 +88,8 @@ class Jarvis:
 
         if not responded:
             logger.warning('Could not understand message "%s".', text)
+            sentry.captureMessage('Could not understand message',
+                                  extra={'msg': text})
             ch.send_message(messages.CONFUSED)
 
     def input(self, data):
@@ -113,6 +121,7 @@ class Jarvis:
                 return
         except Exception:
             logger.error('Error handling message %s', str(data))
+            sentry.captureException()
             raise
 
     async def rtm_respond(self):

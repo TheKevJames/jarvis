@@ -6,6 +6,7 @@ services:
     image: thekevjames/jarvis
     environment:
       - MAILGUN_API_KEY=${MAILGUN_API_KEY}
+      - SENTRY_DSN=${SENTRY_DSN_JARVIS}
       - SLACK_TOKEN=${SLACK_TOKEN}
       - TORRENTDAY_COOKIE=${TORRENTDAY_COOKIE}
       - WORLD_WEATHER_TOKEN=${WORLD_WEATHER_TOKEN}
