@@ -1,5 +1,7 @@
+import asyncio
 import collections
 import logging
+import inspect
 import re
 
 import jarvis.core.helper as helper
@@ -23,6 +25,7 @@ class PluginMetaclass(type):
                      if isinstance(fn, collections.Callable)]
 
         result.api_fns = [fn for fn in functions if hasattr(fn, 'route')]
+        result.loop_fns = [fn for fn in functions if hasattr(fn, 'looping')]
         result.response_fns = [fn for fn in functions
                                if hasattr(fn, 'regex') or hasattr(fn, 'words')]
 
@@ -70,6 +73,11 @@ class Plugin(metaclass=PluginMetaclass):
                 func.__qualname__.split('.')[0].lower(), route)
             return func
         return on_api_decorator
+
+    @staticmethod
+    def on_loop(func):
+        func.looping = True
+        return func
 
     @staticmethod
     def on_regex(msg):
@@ -125,7 +133,11 @@ class Plugin(metaclass=PluginMetaclass):
 
                 continue
 
-            fn(self, ch, user, groups)
+            if inspect.iscoroutinefunction(fn):
+                asyncio.ensure_future(fn(self, ch, user, groups))
+            else:
+                fn(self, ch, user, groups)
+
             for channel, msgs in self.buffer.items():
                 self.send_now(channel, '\n'.join(msgs))
             self.reset_buffer()

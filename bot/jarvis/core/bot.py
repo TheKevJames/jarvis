@@ -137,6 +137,8 @@ class Jarvis:
             plugin = getattr(plugin, plugin.__all__[0])(self.slack)
             self.plugins.append(plugin)
 
+            for function in plugin.loop_fns:
+                asyncio.ensure_future(function(plugin))
             for function in plugin.api_fns:
                 app.router.add_route(function.method, function.route,
                                      functools.partial(function, plugin))
