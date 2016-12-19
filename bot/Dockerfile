@@ -1,5 +1,4 @@
 FROM python:3.5.2-alpine
-MAINTAINER Kevin James <KevinJames@thekev.in>
 
 ENV PYTHONPATH=/src
 
