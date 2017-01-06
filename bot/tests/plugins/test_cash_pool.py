@@ -142,6 +142,11 @@ class TestCashPool:
             mock.call('tom', ['dick'], 4000, 'cad'),
             mock.call('tom', ['tom', 'harry'], 12000, 'cad'),
         ], []),
+
+        # "and"
+        ('kevin paid $10 for amanda', [
+            mock.call('kevin', ['amanda'], 1000, 'cad'),
+        ], []),
     ])
     def test_cash_pool_called_payment(self, message, expected, history):
         self.pool.respond(mock.MagicMock(), 'my_name', message)

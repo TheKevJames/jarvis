@@ -39,7 +39,7 @@ def language_to_list(items):
 
 
 def sentence_to_chunks(sentence):
-    chunks = sentence.replace(',', 'and').split('and')
+    chunks = sentence.replace(',', 'and ').split('and ')
     chunks = [chunk.strip(' ,.?!') for chunk in chunks]
     return [chunk for chunk in chunks if chunk]
 
