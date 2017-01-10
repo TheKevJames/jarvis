@@ -12,7 +12,6 @@ setuptools.setup(
     url='https://github.com/TheKevJames/jarvis.git',
     license='MIT License',
     packages=setuptools.find_packages(exclude=['tests']),
-    install_requires=['aiohttp', 'requests', 'slackclient'],
     classifiers=[
         'Programming Language :: Python',
         'Programming Language :: Python :: 3 :: Only',
