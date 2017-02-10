@@ -111,12 +111,9 @@ class Plugin(metaclass=PluginMetaclass):
         channel.send_message(message)
 
     def upload_now(self, channel, name, filename, filetype):
-        # See https://github.com/slackhq/python-slackclient/issues/64 for why
-        # we use a `content` string rather than a binary `file`
         self.slack.api_call(
-            'files.upload', channels=[channel.id], title=name,
-            content=''.join(open(filename, 'r').readlines()),
-            filename=filename, filetype=filetype)
+            'files.upload', channels=channel.id, title=name,
+            file=open(filename, 'rb'), filename=filename, filetype=filetype)
 
     def respond(self, ch, user, msg):
         for fn in self.response_fns:
