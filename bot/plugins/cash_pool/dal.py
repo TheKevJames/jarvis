@@ -34,7 +34,7 @@ class CashPoolDal(dal.Dal):
 class CashPoolHistoryDal(dal.Dal):
     # pylint: disable=E0213
     columns = ['source', 'targets', 'value', 'currency', 'reason',
-               'created_by']
+               'created_by', 'date']
 
     def create(cur, source, targets, value, currency, reason, user):
         cur.execute(""" INSERT INTO cash_pool_history (source, targets,
