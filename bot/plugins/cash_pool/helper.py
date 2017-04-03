@@ -14,7 +14,7 @@ from .dal import CashPoolHistoryDal
 class CashPoolHelper:
     @staticmethod
     def do_transactions(send, ch, user, reason, transactions, regex):
-        # pylint: dsiable=too-many-arguments
+        # pylint: disable=too-many-arguments
         for tx in transactions:
             sender, value, curr, receiver = regex.match(tx).groups()
             curr = curr or DEFAULT_CURRENCY.lower()

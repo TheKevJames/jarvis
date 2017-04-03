@@ -36,7 +36,7 @@ class Jarvis:
             self.slack.rtm_connect()
 
             self.uuid = self.slack.api_call('auth.test')['user_id']
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-except
             logger.error('Could not start JARVIS.')
             logger.exception(e)
             sentry.captureException()

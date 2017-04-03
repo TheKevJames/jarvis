@@ -35,7 +35,7 @@ class CashPoolHistoryDal(dal.Dal):
                'created_by', 'date']
 
     def create(cur, source, targets, value, currency, reason, user):
-        # pylint: dsiable=too-many-arguments
+        # pylint: disable=too-many-arguments
         cur.execute(""" INSERT INTO cash_pool_history (source, targets,
                                                        value, currency,
                                                        reason, created_by)

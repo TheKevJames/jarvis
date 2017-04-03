@@ -29,3 +29,5 @@
         - -d no-member
         - -d no-self-argument
         - -d no-value-for-parameter
+        # TODO: figure out how to tune this
+        - -d duplicate-code
