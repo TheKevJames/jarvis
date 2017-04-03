@@ -4,6 +4,7 @@ import jarvis.db.dal as dal
 class UsersDal(dal.Dal):
     def create(cur, uuid, first_name, last_name, email, username, is_admin,
                channel):
+        # pylint: dsiable=too-many-arguments
         cur.execute(""" INSERT INTO user
                             (uuid, first_name, last_name, email, username,
                              is_admin, channel)
@@ -33,6 +34,7 @@ class UsersDal(dal.Dal):
 
     def update(cur, uuid, first_name, last_name, email, username, is_admin,
                channel):
+        # pylint: dsiable=too-many-arguments
         cur.execute(""" UPDATE user
                         SET first_name = ?, last_name = ?, email = ?,
                             username = ?, is_admin = ?, channel = ?

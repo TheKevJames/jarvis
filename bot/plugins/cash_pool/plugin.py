@@ -56,6 +56,7 @@ class CashPool(plugin.Plugin):
 
     @plugin.Plugin.on_words({'cash pool', 'csv', 'history'})
     def show_history_csv(self, ch, _user, _groups):
+        # pylint: disable=too-many-locals
         history = CashPoolHistoryDal.read()
         if not history:
             self.send(ch, NO_USAGE())

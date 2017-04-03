@@ -119,7 +119,7 @@ class Jarvis:
                 user = helper.get_user_fields(self.slack, user)
                 users.UsersDal.update(*user)
                 return
-        except Exception:
+        except Exception:  # pylint: disable=broad-except
             logger.error('Error handling message %s', str(data))
             sentry.captureException()
             raise

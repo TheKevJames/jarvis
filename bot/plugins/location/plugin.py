@@ -36,7 +36,7 @@ class Location(plugin.Plugin):
         self.send(ch, UPDATED_LOCATION(groups[0]))
 
     @plugin.Plugin.on_words({'weather'})
-    def get_weather(self, ch, user, _groups):
+    def get_weather(self, ch, user, _groups):  # pylint: disable=too-many-locals
         token = os.environ.get('WORLD_WEATHER_TOKEN')
         if not token:
             self.send(ch, ERROR_NOT_ENABLED())
@@ -80,6 +80,7 @@ class Location(plugin.Plugin):
         if hour > set_hrs or (hour == set_hrs and minutes == set_mins):
             sunset_tense = 'was'
 
+        # pylint: disable=too-many-format-args
         self.send(ch, PRINT_WEATHER(
             greeting, time, city, current['temp_C'], description,
             sunrise_tense, sunrise, sunset_tense, sunset))
