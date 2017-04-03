@@ -41,7 +41,7 @@ class Status(plugin.Plugin):
     def home(self, ch, _user, _group):
         self.send(ch, WELCOME_HOME)
 
-    @plugin.Plugin.on_regex(r".*hello|(you (there|up)).*")
+    @plugin.Plugin.on_regex(r'.*hello|(you (there|up)).*')
     def you_there(self, ch, _user, _groups):
         self.send(ch, GREET())
 

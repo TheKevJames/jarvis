@@ -37,7 +37,7 @@ class Mailgun(plugin.Plugin):
     def initialize():
         initialize()
 
-    @plugin.Plugin.on_regex(r".*my mail ?server is <.*\|(.*)>\.?")
+    @plugin.Plugin.on_regex(r'.*my mail ?server is <.*\|(.*)>\.?')
     def follow_domain(self, ch, user, groups):
         if MailgunDal.create_domain(user, groups[0]):
             self.send(ch, CREATED_FOLLOW(groups[0]))

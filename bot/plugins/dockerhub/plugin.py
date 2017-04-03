@@ -35,17 +35,17 @@ class Dockerhub(plugin.Plugin):
     def initialize():
         initialize()
 
-    @plugin.Plugin.on_regex(r".*my dockerhub username is (.*)\.?")
+    @plugin.Plugin.on_regex(r'.*my dockerhub username is (.*)\.?')
     def change_username(self, ch, user, groups):
         DockerhubDal.update_username(user, groups[0])
         self.send(ch, UPDATED_USERNAME(groups[0]))
 
-    @plugin.Plugin.on_regex(r".*unfollow (.*) on dockerhub.*")
+    @plugin.Plugin.on_regex(r'.*unfollow (.*) on dockerhub.*')
     def unfollow_repository(self, ch, user, groups):
         DockerhubDal.delete_follow(user, groups[0])
         self.send(ch, DELETED_FOLLOW(groups[0]))
 
-    @plugin.Plugin.on_regex(r".*follow (.*) on dockerhub.*")
+    @plugin.Plugin.on_regex(r'.*follow (.*) on dockerhub.*')
     def follow_repository(self, ch, user, groups):
         if DockerhubDal.create_follow(user, groups[0]):
             self.send(ch, CREATED_FOLLOW(groups[0]))

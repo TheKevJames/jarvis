@@ -12,6 +12,7 @@ dependencies:
   pre:
     - pip3 install --upgrade docker-compose
     - pip3 install coveralls
+    - pip3 install pre-commit
 
     - mv docker-compose.ci.yml docker-compose.override.yml
 
@@ -20,6 +21,7 @@ dependencies:
 
 test:
   pre:
+    - pre-commit run --all-files
     - docker-compose run bot init
 
   override:
