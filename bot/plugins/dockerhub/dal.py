@@ -4,7 +4,6 @@ import jarvis.db.dal as dal
 
 
 class DockerhubDal(dal.Dal):
-    # pylint: disable=E0213
     def create_follow(cur, uuid, repository):
         try:
             cur.execute(""" INSERT INTO dockerhub_repository

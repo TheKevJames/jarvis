@@ -4,7 +4,6 @@ import jarvis.db.dal as dal
 
 
 class MailgunDal(dal.Dal):
-    # pylint: disable=E0213
     def create_domain(cur, uuid, domain):
         try:
             cur.execute(""" INSERT INTO mailgun_domain (uuid, domain)

@@ -2,7 +2,6 @@ import jarvis.db.dal as dal
 
 
 class CashPoolDal(dal.Dal):
-    # pylint: disable=E0213
     def read(cur):
         return cur.execute(""" SELECT first_name,
                                       CAST(cad AS FLOAT) / 100,
@@ -32,7 +31,6 @@ class CashPoolDal(dal.Dal):
 
 
 class CashPoolHistoryDal(dal.Dal):
-    # pylint: disable=E0213
     columns = ['source', 'targets', 'value', 'currency', 'reason',
                'created_by', 'date']
 

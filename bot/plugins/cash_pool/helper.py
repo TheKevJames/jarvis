@@ -131,6 +131,7 @@ class CashPoolHelper:
             return False
 
         source, targets, value, currency = last
+        # TODO: use a real data structure here
         CashPoolDal.update(source, eval(targets),  # pylint: disable=W0123
                            -int(float(value) * 100), currency)
         CashPoolHistoryDal.create(source, targets, value, currency, 'REVERT',

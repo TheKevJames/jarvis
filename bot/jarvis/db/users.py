@@ -2,7 +2,6 @@ import jarvis.db.dal as dal
 
 
 class UsersDal(dal.Dal):
-    # pylint: disable=E0213
     def create(cur, uuid, first_name, last_name, email, username, is_admin,
                channel):
         cur.execute(""" INSERT INTO user

@@ -2,7 +2,6 @@ import jarvis.db.dal as dal
 
 
 class LocationDal(dal.Dal):
-    # pylint: disable=E0213
     default_location = 'waterloo'
 
     def read(cur, uuid):

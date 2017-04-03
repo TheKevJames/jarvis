@@ -24,3 +24,8 @@
         - -d invalid-name
         - -d locally-disabled
         - -d missing-docstring
+        - -d too-few-public-methods
+        # TODO: re-architect plugins structure
+        - -d no-member
+        - -d no-self-argument
+        - -d no-value-for-parameter

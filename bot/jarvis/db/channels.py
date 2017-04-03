@@ -2,7 +2,6 @@ import jarvis.db.dal as dal
 
 
 class ChannelsDal(dal.Dal):
-    # pylint: disable=E0213
     def is_direct(cur, channel):
         return cur.execute('SELECT 1 FROM user WHERE channel = ?',
                            [channel]).fetchone()
