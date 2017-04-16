@@ -4,6 +4,7 @@ from .constant import ACKNOWLEDGE
 from .constant import CONFUSED
 from .constant import DEFAULT_CURRENCY
 from .constant import DISPLAYING
+from .constant import MALFORMED
 from .constant import NO_USAGE
 from .constant import NO_USER
 from .constant import SHOW_CASH_POOL_HISTORY_ITEM
@@ -16,7 +17,13 @@ class CashPoolHelper:
     def do_transactions(send, ch, user, reason, transactions, regex):
         # pylint: disable=too-many-arguments
         for tx in transactions:
-            sender, value, curr, receiver = regex.match(tx).groups()
+            try:
+                sender, value, curr, receiver = regex.match(tx).groups()
+            except AttributeError:
+                # no match
+                send(ch, MALFORMED(tx))
+                return
+
             curr = curr or DEFAULT_CURRENCY.lower()
             receivers = receiver.split(' ')
 

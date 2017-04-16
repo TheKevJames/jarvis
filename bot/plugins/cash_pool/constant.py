@@ -24,6 +24,7 @@ ALL_SETTLED = 'All appears to be settled.'
 ANALYZED = "I've analyzed your cash pool."
 CONFUSED = "What is it you're trying to achieve, sir?"
 DISPLAYING = lambda x: ACKNOWLEDGE() + ' Displaying your {} now:'.format(x)
+MALFORMED = 'Sir, take a deep breath. "{}" is not a valid payment form.'.format
 NO_REVERTABLE = 'I could not find a change to revert.'
 NO_USER = 'User trace incomplete. Could not find "{}".'.format
 SHOW_CASH_POOL_HISTORY_ITEM = '{} -> {}: ${} {} {}, added by {} on {}'.format
