@@ -79,8 +79,8 @@ class Mailgun(plugin.Plugin):
         elif event == 'complained':
             self.send_now(ch, COMPLAINED(domain, post_data['recipient']))
             return aiohttp.web.Response(text='ok')
-        # elif event == 'delivered':
-        #     pass
+        elif event == 'delivered':
+            return aiohttp.web.Response(text='ok')
         elif event == 'dropped':
             self.send_now(ch, DROPPED(domain, post_data['recipient'],
                                       post_data['description'].lower()))
@@ -90,5 +90,5 @@ class Mailgun(plugin.Plugin):
         # elif event == 'unsubscribed':
         #     pass
 
-        logger.debug('Received valid but unsupported webhook (%s).', event)
+        logger.warning('Received valid but unsupported webhook (%s).', event)
         return aiohttp.web.Response(status=406, text='unsupported event')
