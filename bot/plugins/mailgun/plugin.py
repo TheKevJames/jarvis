@@ -52,6 +52,7 @@ class Mailgun(plugin.Plugin):
 
     @plugin.Plugin.on_api('POST', 'webhook')
     async def webhook(self, request):
+        # pylint: disable=too-many-return-statements
         post_data = await request.post()
 
         response = MailgunHelper.validate(post_data['signature'],
