@@ -5,7 +5,6 @@ import logging
 
 import aiohttp
 import bs4
-
 import jarvis.core.plugin as plugin
 
 

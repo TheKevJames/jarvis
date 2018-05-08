@@ -85,7 +85,7 @@ class CashPoolHelper:
         except TypeError:
             if receiver not in ('me', 'himself', 'herself'):
                 send(ch, NO_USER(receiver))
-                return
+                return None
 
             if receiver == 'me':
                 return user
@@ -99,7 +99,7 @@ class CashPoolHelper:
         except TypeError:
             if sender != 'i':
                 send(ch, NO_USER(sender))
-                return
+                return None
 
             return user
 

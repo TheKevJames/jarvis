@@ -5,10 +5,10 @@ inadequacies by telling me "I'm in _________."
 """
 import logging
 import os
-import requests
 
 import jarvis.core.helper as helper
 import jarvis.core.plugin as plugin
+import requests
 
 from .constant import ERROR_NOT_ENABLED
 from .constant import ERROR_RETRIEVING_WEATHER

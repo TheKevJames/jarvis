@@ -10,7 +10,6 @@ dockerhub".
 import logging
 
 import aiohttp.web
-
 import jarvis.core.helper as helper
 import jarvis.core.plugin as plugin
 import jarvis.db.users as users

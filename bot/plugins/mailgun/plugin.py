@@ -10,7 +10,6 @@ switch to a new server, simply tell my you "don't use _____ as a mail server".
 import logging
 
 import aiohttp.web
-
 import jarvis.core.helper as helper
 import jarvis.core.plugin as plugin
 import jarvis.db.users as users

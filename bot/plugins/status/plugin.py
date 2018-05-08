@@ -6,7 +6,6 @@ import logging
 import sys
 
 import aiohttp.web
-
 import jarvis.core.helper as helper
 import jarvis.core.plugin as plugin
 import jarvis.db.channels as channels

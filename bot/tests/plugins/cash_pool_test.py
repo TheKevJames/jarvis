@@ -1,10 +1,8 @@
-import mock
-import pytest
-
 import jarvis.db.users
-
-import plugins.cash_pool.plugin as cash_pool
+import mock
 import plugins.cash_pool.helper as helper
+import plugins.cash_pool.plugin as cash_pool
+import pytest
 
 
 class TestCashPool:

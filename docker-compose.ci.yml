@@ -1,8 +1,0 @@
-version: '2'
-
-services:
-  bot:
-    volumes:
-      - ${PWD}/bot:/src
-      - ${PWD}/bot/plugins:/plugins
-      - ${CIRCLE_ARTIFACTS}/coverage:/src/htmlcov

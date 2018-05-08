@@ -1,21 +1,30 @@
+repos:
 -   repo: git://github.com/pre-commit/pre-commit-hooks
-    sha: 5bf6c09bfa1297d3692cadd621ef95f1284e33c0
+    sha: v1.2.3
     hooks:
+    -   id: check-ast
     -   id: check-case-conflict
+    -   id: check-executables-have-shebangs
     -   id: check-json
     -   id: check-merge-conflict
     -   id: check-symlinks
+    -   id: check-vcs-permalinks
     -   id: check-xml
     -   id: check-yaml
-    -   id: detect-private-key
-    -   id: end-of-file-fixer
-    -   id: trailing-whitespace
-    -   id: check-ast
-    -   id: double-quote-string-fixer
+        args: [--allow-multiple-documents]
     -   id: debug-statements
+    -   id: detect-private-key
+    -   id: double-quote-string-fixer
+    -   id: end-of-file-fixer
+    -   id: file-contents-sorter
+        files: .gitignore
+    -   id: mixed-line-ending
+        args: [--fix=lf]
+    -   id: name-tests-test
     -   id: requirements-txt-fixer
+    -   id: trailing-whitespace
 -   repo: git://github.com/pre-commit/mirrors-pylint
-    sha: v1.6.4.post1
+    sha: v1.8.4
     hooks:
     -   id: pylint
         args:
@@ -25,9 +34,23 @@
         - -d locally-disabled
         - -d missing-docstring
         - -d too-few-public-methods
-        # TODO: re-architect plugins structure
-        - -d no-member
+        - -d no-member  # TODO: re-architect plugins structure
         - -d no-self-argument
         - -d no-value-for-parameter
-        # TODO: figure out how to tune this
-        - -d duplicate-code
+        - -d duplicate-code  # TODO: figure out how to tune this
+        - -d deprecated-method  # TODO: kill load_module()
+-   repo: git://github.com/Lucas-C/pre-commit-hooks
+    sha: v1.1.5
+    hooks:
+    -   id: remove-crlf
+    -   id: remove-tabs
+-   repo: git://github.com/asottile/reorder_python_imports
+    sha: v1.0.1
+    hooks:
+    -   id: reorder-python-imports
+        args: [--py3-plus]
+-   repo: git://github.com/asottile/pyupgrade
+    sha: v1.2.0
+    hooks:
+    -   id: pyupgrade
+        args: [--py3-plus]

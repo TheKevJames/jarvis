@@ -6,14 +6,13 @@ import os
 import sys
 
 import aiohttp.web
-import raven
-
 import jarvis.core.async as async
 import jarvis.core.helper as helper
 import jarvis.core.messages as messages
 import jarvis.db.channels as channels
 import jarvis.db.schema as schema
 import jarvis.db.users as users
+import raven
 
 
 SENTRY_DSN = os.environ.get('SENTRY_DSN')

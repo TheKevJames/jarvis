@@ -2,8 +2,8 @@ import asyncio
 import logging
 
 import slackclient
-# https://github.com/slackhq/python-slackclient/issues/118
 from websocket import WebSocketConnectionClosedException
+# https://github.com/slackhq/python-slackclient/issues/118
 
 
 logger = logging.getLogger(__name__)
@@ -33,9 +33,6 @@ class SlackAsyncRTMReader:
 
 
 class SlackClient(slackclient.SlackClient):
-    def __init__(self, token):
-        super().__init__(token)
-
     async def keepalive(self):
         while True:
             await asyncio.sleep(3)

@@ -20,9 +20,9 @@ class DalMetaclass(type):
         return collections.OrderedDict()
 
     def __new__(mcs, name, bases, namespace, **_kwargs):
-        for name, function in namespace.items():
+        for name_, function in namespace.items():
             if isinstance(function, collections.Callable):
-                namespace[name] = staticmethod(in_context(function))
+                namespace[name_] = staticmethod(in_context(function))
         return type.__new__(mcs, name, bases, dict(namespace))
 
 

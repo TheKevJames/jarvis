@@ -1,0 +1,62 @@
+version: 2
+
+jobs:
+  lint:
+    docker:
+      - image: python:3.5.2
+    steps:
+      - checkout
+      - run: pip install pre-commit
+      - run: pre-commit run --all-files
+
+  pytest:
+    docker:
+      - image: docker:18.04.0-ce-git
+    steps:
+      - run:
+          name: install dependencies
+          command: |
+            apk add --no-cache curl python3
+            python3 -m pip install docker-compose
+      - checkout
+      - setup_remote_docker
+      - run: docker-compose build
+      - run: docker-compose run bot init
+      - run: docker-compose run bot sh -c 'cd /src; pip uninstall -y jarvis; pip install -r requirements.test.txt; py.test'
+
+  deploy:
+    docker:
+      - image: python:3.6.2-alpine3.6
+    steps:
+      - run: apk add --no-cache curl git openssh-client
+      - checkout
+      - run: curl -L https://github.com/aktau/github-release/releases/download/v0.7.2/linux-amd64-github-release.tar.bz2 | tar xj
+      - deploy:
+          name: create GitHub release
+          command: |
+            ./bin/linux/amd64/github-release release -t "${CIRCLE_TAG}" || true
+            git log $(git tag --sort=version:refname | tail -n2 | head -n1)..${CIRCLE_TAG} --pretty=format:'- %s' > release-description.md
+            cat release-description.md | ./bin/linux/amd64/github-release edit -t ${CIRCLE_TAG} -d -
+
+workflows:
+  version: 2
+  run-jobs:
+    jobs:
+      - lint:
+          filters:
+            tags:
+              only: /.*/
+      - pytest:
+          filters:
+            tags:
+              only: /.*/
+      - deploy:
+          context: org-global
+          requires:
+            - lint
+            - pytest
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /[0-9]+\.[0-9]+\.[0-9]+/

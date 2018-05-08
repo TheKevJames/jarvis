@@ -42,7 +42,7 @@ class MailgunHelper:
                                  msg='{}{}'.format(timestamp, token).encode(),
                                  digestmod=hashlib.sha256).hexdigest()
             if hexdigest == signature:
-                return
+                return aiohttp.web.Response(status=200)
 
         logger.info('Rejected webhook with bad digest.')
         return aiohttp.web.Response(status=403, text='invalid signature')

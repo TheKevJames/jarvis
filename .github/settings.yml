@@ -1,14 +1,14 @@
 repository:
   name: jarvis
   description: J.A.R.V.I.S., a Python Slackbot
-  # homepage:
   private: false
 
   has_issues: true
   has_projects: false
   has_wiki: false
+  has_downloads: false
 
-  allow_merge_commit: true
+  allow_merge_commit: false
   allow_rebase_merge: true
   allow_squash_merge: true
 

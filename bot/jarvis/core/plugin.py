@@ -1,7 +1,7 @@
 import asyncio
 import collections
-import logging
 import inspect
+import logging
 import re
 
 import jarvis.core.helper as helper
